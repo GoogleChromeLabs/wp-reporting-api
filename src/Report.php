@@ -128,11 +128,7 @@ class Report {
 
 		// TODO: Validate type.
 		if ( $this->is_date_empty( $this->props['first_triggered'] ) ) {
-			if ( ! $this->is_date_empty( $this->props['first_reported'] ) ) {
-				$this->props['first_triggered'] = $this->props['first_reported'];
-			} else {
-				$this->props['first_triggered'] = current_time( 'mysql', true );
-			}
+			$this->props['first_triggered'] = $this->get_fallback_date( $this->props['first_reported'] );
 		}
 
 		if ( $this->is_date_empty( $this->props['first_reported'] ) ) {
@@ -148,12 +144,24 @@ class Report {
 		}
 
 		if ( is_string( $this->props['body'] ) ) {
-			if ( ! empty( $this->props['body'] ) ) {
-				$this->props['body'] = json_decode( $this->props['body'] );
-			} else {
-				$this->props['body'] = new \stdClass();
-			}
+			$this->props['body'] = $this->decode_body( $this->props['body'] );
 		}
+	}
+
+	/**
+	 * Gets a fallback date.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $fallback_date Fallback date to use, possibly an empty string.
+	 * @return string Returns the fallback date if valid, or otherwise the current GMT date.
+	 */
+	protected function get_fallback_date( $fallback_date ) {
+		if ( ! $this->is_date_empty( $fallback_date ) ) {
+			return $fallback_date;
+		}
+
+		return current_time( 'mysql', true );
 	}
 
 	/**
@@ -168,5 +176,21 @@ class Report {
 	 */
 	protected function is_date_empty( $date ) {
 		return empty( $date ) || '0000-00-00 00:00:00' === $date;
+	}
+
+	/**
+	 * JSON-decodes the report body.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $body Report body JSON string.
+	 * @return object Object based on $body.
+	 */
+	protected function decode_body( $body ) {
+		if ( ! empty( $body ) ) {
+			return json_decode( $body );
+		}
+
+		return new \stdClass();
 	}
 }
