@@ -1,7 +1,7 @@
 {
   "name": "google/reporting-api",
   "description": "WordPress plugin for implementing an endpoint for tbrowser reporting.",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "license": "GPL-2.0-or-later",
   "type": "wordpress-plugin",
   "keywords": [

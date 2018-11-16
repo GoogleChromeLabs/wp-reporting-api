@@ -10,7 +10,7 @@
  * Plugin Name: Reporting API
  * Plugin URI:  https://wordpress.org/plugins/reporting-api/
  * Description: WordPress plugin for implementing an endpoint for tbrowser reporting.
- * Version:     1.0.0
+ * Version:     0.1.0
  * Author:      Google
  * Author URI:  https://opensource.google.com/
  * License:     GNU General Public License v2 (or later)
@@ -24,7 +24,7 @@
 /**
  * Loads the plugin.
  *
- * @since 1.0.0
+ * @since 0.1.0
  */
 function _wp_reporting_api_load() {
 	if ( version_compare( phpversion(), '5.6', '<' ) ) {
@@ -47,7 +47,7 @@ function _wp_reporting_api_load() {
 /**
  * Displays an admin notice about an unmet PHP version requirement.
  *
- * @since 1.0.0
+ * @since 0.1.0
  */
 function _wp_reporting_api_display_php_version_notice() {
 	?>
@@ -69,7 +69,7 @@ function _wp_reporting_api_display_php_version_notice() {
 /**
  * Displays an admin notice about an unmet WordPress version requirement.
  *
- * @since 1.0.0
+ * @since 0.1.0
  */
 function _wp_reporting_api_display_wp_version_notice() {
 	?>

@@ -12,7 +12,7 @@ namespace Google\WP_Reporting_API;
 /**
  * Main class for the plugin.
  *
- * @since 1.0.0
+ * @since 0.1.0
  */
 class Plugin {
 
@@ -23,6 +23,14 @@ class Plugin {
 	 * @var string
 	 */
 	protected $main_file;
+
+	/**
+	 * The reports controller instance.
+	 *
+	 * @since 0.1.0
+	 * @var Reports
+	 */
+	protected $reports;
 
 	/**
 	 * Main instance of the plugin.
@@ -41,6 +49,8 @@ class Plugin {
 	 */
 	public function __construct( $main_file ) {
 		$this->main_file = $main_file;
+
+		$this->reports = new Reports();
 	}
 
 	/**
@@ -49,7 +59,7 @@ class Plugin {
 	 * @since 0.1.0
 	 */
 	public function register() {
-		// TODO.
+		$this->reports->register();
 	}
 
 	/**
