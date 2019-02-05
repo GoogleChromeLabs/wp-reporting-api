@@ -59,6 +59,24 @@ class Report_Logs {
 	}
 
 	/**
+	 * Counts report logs using a query.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param array $query_vars Array of report log query arguments. See {@see Report_Log_Query::__construct()} for a
+	 *                          list of supported arguments. The $fields and $no_found_rows arguments are automatically
+	 *                          set, i.e. not supported here.
+	 * @return int Count of report logs returned by the query.
+	 */
+	public function count( array $query_vars ) {
+		$query_args['fields']        = 'count';
+		$query_vars['no_found_rows'] = true;
+
+		$query = $this->get_query( $query_vars );
+		return $query->get_results();
+	}
+
+	/**
 	 * Gets an existing report log.
 	 *
 	 * @since 0.1.0
