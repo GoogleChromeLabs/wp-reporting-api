@@ -42,21 +42,11 @@ class Report {
 	 * @param array $props {
 	 *     Report properties, including the ID if present.
 	 *
-	 *     @type int           $id              Unique report ID, or 0 if not persisted yet. Default 0.
-	 *     @type string        $type            Report type. Default empty string.
-	 *     @type string        $first_triggered The date the report was first triggered, in GMT. Default is the
-	 *                                          value of $first_reported if present, or the current date.
-	 *     @type string        $first_reported  The date the report was first reported, in GMT. Default is the
-	 *                                          value of $first_triggered if present, or the current date.
-	 *     @type string        $last_triggered  The date the report was last triggered, in GMT. Default is the value
-	 *                                          of $first_triggered.
-	 *     @type string        $last_reported   The date the report was last reported, in GMT. Default is the value
-	 *                                          of $last_triggered.
-	 *     @type string        $url             The URL to which the report applies. Default empty string.
-	 *     @type string        $user_agent      The user agent to which the report applies. Default empty string.
-	 *     @type object|string $body            The report body data, either as object with public properties or JSON
-	 *                                          string. The properties that the object should have depends on the
-	 *                                          report $type. Default empty object.
+	 *     @type int           $id   Unique report ID, or 0 if not persisted yet. Default 0.
+	 *     @type string        $type Report type. Default empty string.
+	 *     @type object|string $body The report body data, either as object with public properties or JSON string.
+	 *                               The properties that the object should have depends on the report $type. Default
+	 *                               empty object.
 	 * }
 	 */
 	public function __construct( array $props ) {
@@ -114,68 +104,15 @@ class Report {
 	 */
 	protected function set_props( array $props ) {
 		$defaults = array(
-			'type'            => '',
-			'first_triggered' => '',
-			'first_reported'  => '',
-			'last_triggered'  => '',
-			'last_reported'   => '',
-			'url'             => '',
-			'user_agent'      => '',
-			'body'            => new \stdClass(),
+			'type' => '',
+			'body' => new \stdClass(),
 		);
 
 		$this->props = array_intersect_key( array_merge( $defaults, $props ), $defaults );
 
-		// TODO: Validate type.
-		if ( $this->is_date_empty( $this->props['first_triggered'] ) ) {
-			$this->props['first_triggered'] = $this->get_fallback_date( $this->props['first_reported'] );
-		}
-
-		if ( $this->is_date_empty( $this->props['first_reported'] ) ) {
-			$this->props['first_reported'] = $this->props['first_triggered'];
-		}
-
-		if ( $this->is_date_empty( $this->props['last_triggered'] ) ) {
-			$this->props['last_triggered'] = $this->props['first_triggered'];
-		}
-
-		if ( $this->is_date_empty( $this->props['last_reported'] ) ) {
-			$this->props['last_reported'] = $this->props['first_reported'];
-		}
-
 		if ( is_string( $this->props['body'] ) ) {
 			$this->props['body'] = $this->decode_body( $this->props['body'] );
 		}
-	}
-
-	/**
-	 * Gets a fallback date.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @param string $fallback_date Fallback date to use, possibly an empty string.
-	 * @return string Returns the fallback date if valid, or otherwise the current GMT date.
-	 */
-	protected function get_fallback_date( $fallback_date ) {
-		if ( ! $this->is_date_empty( $fallback_date ) ) {
-			return $fallback_date;
-		}
-
-		return current_time( 'mysql', true );
-	}
-
-	/**
-	 * Checks whether a given date is considered empty.
-	 *
-	 * This applies to an actually empty date string as well as the value '0000-00-00 00:00:00'.
-	 *
-	 * @since 0.1.0
-	 *
-	 * @param string $date MySQL date string.
-	 * @return bool True if the date is considered empty, false otherwise.
-	 */
-	protected function is_date_empty( $date ) {
-		return empty( $date ) || '0000-00-00 00:00:00' === $date;
 	}
 
 	/**

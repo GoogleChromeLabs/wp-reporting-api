@@ -33,6 +33,14 @@ class Plugin {
 	protected $reports;
 
 	/**
+	 * The report logs controller instance.
+	 *
+	 * @since 0.1.0
+	 * @var Report_Logs
+	 */
+	protected $report_logs;
+
+	/**
 	 * Main instance of the plugin.
 	 *
 	 * @since 0.1.0
@@ -50,7 +58,30 @@ class Plugin {
 	public function __construct( $main_file ) {
 		$this->main_file = $main_file;
 
-		$this->reports = new Reports();
+		$this->reports     = new Reports();
+		$this->report_logs = new Report_Logs( $this->reports );
+	}
+
+	/**
+	 * Returns the reports controller instance.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return Reports The reports controller instance.
+	 */
+	public function reports() {
+		return $this->reports;
+	}
+
+	/**
+	 * Returns the report logs controller instance.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return Report_Logs The report logs controller instance.
+	 */
+	public function report_logs() {
+		return $this->report_logs;
 	}
 
 	/**
@@ -59,7 +90,28 @@ class Plugin {
 	 * @since 0.1.0
 	 */
 	public function register() {
-		$this->reports->register();
+		$this->register_db_table_names();
+
+		register_activation_hook(
+			$this->main_file,
+			function( $network_wide ) {
+				if ( $network_wide ) {
+					$site_ids = get_sites(
+						array(
+							'fields'     => 'ids',
+							'network_id' => get_current_network_id(),
+						)
+					);
+					foreach ( $site_ids as $site_id ) {
+						switch_to_blog( $site_id );
+						$this->install_db_tables();
+						restore_current_blog();
+					}
+					return;
+				}
+				$this->install_db_tables();
+			}
+		);
 	}
 
 	/**
@@ -95,6 +147,77 @@ class Plugin {
 	 */
 	public function url( $relative_path = '/' ) {
 		return plugin_dir_url( $this->main_file ) . ltrim( $relative_path, '/' );
+	}
+
+	/**
+	 * Registers the database table names.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 */
+	protected function register_db_table_names() {
+		global $wpdb;
+
+		$reports_table     = Reports::DB_TABLE;
+		$report_logs_table = Report_Logs::DB_TABLE;
+
+		$wpdb->tables[]             = $reports_table;
+		$wpdb->tables[]             = $report_logs_table;
+		$wpdb->{$reports_table}     = $wpdb->prefix . $reports_table;
+		$wpdb->{$report_logs_table} = $wpdb->prefix . $report_logs_table;
+	}
+
+	/**
+	 * Installs the database tables.
+	 *
+	 * @since 0.1.0
+	 */
+	protected function install_db_tables() {
+		global $wpdb;
+
+		$queries = array();
+
+		$max_index_length = 191;
+		$charset_collate  = $wpdb->get_charset_collate();
+
+		$reports_table = Reports::DB_TABLE;
+		if ( ! $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->{$reports_table}}'" ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL
+			$reports_schema = array(
+				'id bigint(20) unsigned NOT NULL auto_increment',
+				"type char(50) NOT NULL default ''",
+				'body longtext NOT NULL',
+				'PRIMARY KEY  (id)',
+				'KEY type (type)',
+			);
+			$reports_schema = "\n\t" . implode( ",\n\t", $reports_schema ) . "\n";
+
+			$queries[] = "CREATE TABLE {$wpdb->{$reports_table}} ({$reports_schema}) {$charset_collate};";
+		}
+
+		$report_logs_table = Report_Logs::DB_TABLE;
+		if ( ! $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->{$report_logs_table}}'" ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL
+			$report_logs_schema = array(
+				'id bigint(20) unsigned NOT NULL auto_increment',
+				'report_id bigint(20) unsigned NOT NULL',
+				'url varchar(255) NOT NULL',
+				"user_agent varchar(255) NOT NULL default ''",
+				"triggered datetime NOT NULL default '0000-00-00 00:00:00'",
+				"reported datetime NOT NULL default '0000-00-00 00:00:00'",
+				'PRIMARY KEY  (id)',
+				'KEY report_id (report_id)',
+				"KEY url (url($max_index_length))",
+			);
+			$report_logs_schema = "\n\t" . implode( ",\n\t", $report_logs_schema ) . "\n";
+
+			$queries[] = "CREATE TABLE {$wpdb->{$reports_table}} ({$reports_schema}) {$charset_collate};";
+		}
+
+		if ( empty( $queries ) ) {
+			return;
+		}
+
+		dbDelta( implode( "\n", $queries ) );
 	}
 
 	/**

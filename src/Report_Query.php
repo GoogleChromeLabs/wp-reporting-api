@@ -235,8 +235,161 @@ class Report_Query {
 	protected function query_results() {
 		global $wpdb;
 
-		// TODO.
-		return array();
+		$table_name = $this->reports->get_db_table_name();
+
+		$fields = "{$table_name}.id";
+		if ( 'count' === $this->query_vars['fields'] ) {
+			$fields = "COUNT({$fields})";
+		}
+
+		$distinct = '';
+
+		$number = $this->query_vars['number'];
+		$offset = $this->query_vars['offset'];
+
+		if ( $number ) {
+			if ( $offset ) {
+				$limits = "LIMIT $offset,$number";
+			} else {
+				$limits = "LIMIT $number";
+			}
+		}
+
+		$found_rows = '';
+		if ( ! $this->query_vars['no_found_rows'] ) {
+			$found_rows = 'SQL_CALC_FOUND_ROWS';
+		}
+
+		$join_report_logs = false;
+
+		// TODO: Parse where args.
+		$this->sql_clauses['where'] = array();
+
+		// TODO: Parse orderby.
+		$orderby = $this->parse_orderby( $this->query_vars['orderby'], $this->query_vars['order'] );
+
+		$join    = '';
+		$groupby = '';
+		if ( $join_report_logs ) {
+			$report_logs_table_name = Plugin::instance()->report_logs()->get_db_table_name();
+
+			$join    = "INNER JOIN {$report_logs_table_name} AS l ON ({$table_name}.id = l.report_id)";
+			$groupby = "{$table_name}.id";
+		}
+
+		$where = implode( ' AND ', $this->sql_clauses['where'] );
+
+		$pieces = array( 'fields', 'join', 'where', 'orderby', 'limits', 'groupby' );
+
+		$clauses = compact( $pieces );
+
+		$fields  = isset( $clauses['fields'] ) ? $clauses['fields'] : '';
+		$join    = isset( $clauses['join'] ) ? $clauses['join'] : '';
+		$where   = isset( $clauses['where'] ) ? $clauses['where'] : '';
+		$orderby = isset( $clauses['orderby'] ) ? $clauses['orderby'] : '';
+		$limits  = isset( $clauses['limits'] ) ? $clauses['limits'] : '';
+		$groupby = isset( $clauses['groupby'] ) ? $clauses['groupby'] : '';
+
+		if ( $where ) {
+			$where = "WHERE $where";
+		}
+
+		if ( $orderby ) {
+			$orderby = "ORDER BY $orderby";
+		}
+
+		if ( $groupby ) {
+			$groupby = "GROUP BY $groupby";
+		}
+
+		$this->sql_clauses['select']  = "SELECT $distinct $found_rows $fields";
+		$this->sql_clauses['from']    = "FROM %{$table_name}% $join";
+		$this->sql_clauses['groupby'] = $groupby;
+		$this->sql_clauses['orderby'] = $orderby;
+		$this->sql_clauses['limits']  = $limits;
+
+		$this->request = "{$this->sql_clauses['select']} {$this->sql_clauses['from']} {$where} {$this->sql_clauses['groupby']} {$this->sql_clauses['orderby']} {$this->sql_clauses['limits']}";
+
+		if ( 'count' === $this->query_vars['fields'] ) {
+			return (int) $wpdb->get_var( $this->request ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL
+		}
+
+		return (array) $wpdb->get_col( $this->request ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL
+	}
+
+	/**
+	 * Parses a given search string into an SQL clause for text search.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param string $search Search string.
+	 * @return string SQL to be used as a where clause.
+	 */
+	protected function get_search_sql( $search ) {
+		global $wpdb;
+
+		$table_name = $this->reports->get_db_table_name();
+
+		if ( false !== strpos( $search, '*' ) ) {
+			$like = '%' . implode( '%', array_map( array( $wpdb, 'esc_like' ), explode( '*', $search ) ) ) . '%';
+		} else {
+			$like = '%' . $wpdb->esc_like( $search ) . '%';
+		}
+
+		return $wpdb->prepare( "{$table_name}.body LIKE %s", $like ); // phpcs:ignore WordPress.DB.PreparedSQL
+	}
+
+	/**
+	 * Parses the $orderby and $order query variables into an SQL orderby clause.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param array|string $orderby The orderby query variable.
+	 * @param string       $order   The order query variable.
+	 * @return string SQL to be appended to an `ORDER BY` clause.
+	 */
+	protected function parse_orderby( $orderby, $order ) {
+		$table_name = $this->reports->get_db_table_name();
+
+		if ( in_array( $orderby, array( 'none', array(), false ), true ) ) {
+			return '';
+		}
+
+		if ( empty( $orderby ) ) {
+			$order = 'ASC' === strtoupper( $order ) ? 'ASC' : 'DESC';
+			return "{$table_name}.id {$order}";
+		}
+
+		if ( ! is_array( $orderby ) ) {
+			$orderby = array( $orderby => $order );
+		}
+
+		$valid_orderby = array(
+			'type'            => "{$table_name}.type",
+			'first_triggered' => 'MIN(l.triggered)',
+			'first_reported'  => 'MIN(l.reported)',
+			'last_triggered'  => 'MAX(l.triggered)',
+			'last_reported'   => 'MAX(l.reported)',
+		);
+
+		$orderby_array = array();
+		foreach ( $orderby as $_orderby => $_order ) {
+			if ( 'include' === $_orderby ) {
+				$include_ids     = implode( ',', array_map( 'absint', $this->query_vars['include'] ) );
+				$orderby_array[] = "FIELD( {$table_name}.id, $include_ids )";
+				continue;
+			}
+
+			if ( ! isset( $valid_orderby[ $_orderby ] ) ) {
+				continue;
+			}
+
+			$_order = 'ASC' === strtoupper( $_order ) ? 'ASC' : 'DESC';
+
+			$orderby_array[] = $valid_orderby[ $_orderby ] . ' ' . $_order;
+		}
+
+		return implode( ', ', $orderby_array );
 	}
 
 	/**
