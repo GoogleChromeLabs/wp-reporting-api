@@ -95,6 +95,26 @@ class Report {
 	}
 
 	/**
+	 * Queries report logs associated with this report.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param array $query_vars Array of report log query arguments. See {@see Report_Log_Query::__construct()} for a
+	 *                          list of supported arguments. The $report_id, $fields and $no_found_rows arguments are
+	 *                          automatically set, i.e. not supported here.
+	 * @return array List of {@see Report_Log} instances.
+	 */
+	public function query_logs( array $query_vars ) {
+		if ( ! $this->id ) {
+			return array();
+		}
+
+		$query_vars['report_id'] = $this->id;
+
+		return Plugin::instance()->report_logs()->query( $query_vars );
+	}
+
+	/**
 	 * Sets the report properties.
 	 *
 	 * @since 0.1.0

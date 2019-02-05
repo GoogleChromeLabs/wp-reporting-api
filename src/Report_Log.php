@@ -98,6 +98,21 @@ class Report_Log {
 	}
 
 	/**
+	 * Gets the report associated with this report log.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return Report|null Report instance, or null if not available.
+	 */
+	public function get_report() {
+		if ( ! $this->props['report_id'] ) {
+			return null;
+		}
+
+		return Plugin::instance()->reports()->get( $this->props['report_id'] );
+	}
+
+	/**
 	 * Sets the report log properties.
 	 *
 	 * @since 0.1.0
