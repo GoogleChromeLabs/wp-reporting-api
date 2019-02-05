@@ -108,26 +108,29 @@ class Report_Query {
 	 * @param array   $query_vars {
 	 *     Array of report query arguments.
 	 *
-	 *     @type array        $include        Array of report IDs to include. Default empty.
-	 *     @type array        $exclude        Array of report IDs to exclude. Default empty.
-	 *     @type int          $number         Maximum number of reports to retrieve. Default 10.
-	 *     @type int          $offset         Number of reports to offset the query. Used to build LIMIT clause.
-	 *                                        Default 0.
-	 *     @type bool         $no_found_rows  Whether to disable the `SQL_CALC_FOUND_ROWS` query. Default false.
-	 *     @type string|array $orderby        Report orderby field or array of orderby fields. Accepts 'id', 'type',
-	 *                                        'first_triggered', 'first_reported', 'last_triggered', 'last_reported'.
-	 *                                        Default 'last_reported'.
-	 *     @type string       $order          How to order retrieved reports. Accepts 'ASC', 'DESC'. Default 'DESC'.
-	 *     @type string|array $type           Limit results to those affiliated with a given type. Default empty
-	 *                                        string.
-	 *     @type array        $date_query     Date query clauses to limit reports by. See WP_Date_Query. Default null.
-	 *     @type string       $search         Search term(s) to retrieve matching reports for. Default empty.
-	 *     @type array        $search_columns Array of column names to be searched. Accepts 'url', 'user_agent', and
-	 *                                        'body'. Default empty array.
-	 *     @type string       $fields         Report fields to return. Accepts 'ids' (returns an array of report IDs),
-	 *                                        'count' (returns a report count) or 'all' (returns an array of complete
-	 *                                        report objects).
-	 *     @type bool         $update_cache   Whether to prime the cache for found reports. Default true.
+	 *     @type array        $include       Array of report IDs to include. Default empty.
+	 *     @type array        $exclude       Array of report IDs to exclude. Default empty.
+	 *     @type int          $number        Maximum number of reports to retrieve. Default 10.
+	 *     @type int          $offset        Number of reports to offset the query. Used to build LIMIT clause.
+	 *                                       Default 0.
+	 *     @type bool         $no_found_rows Whether to disable the `SQL_CALC_FOUND_ROWS` query. Default false.
+	 *     @type string|array $orderby       Report orderby field or array of orderby fields. Accepts 'id', 'type',
+	 *                                       'triggered', 'reported', 'include'. Default 'reported'.
+	 *     @type string       $order         How to order retrieved reports. Accepts 'ASC', 'DESC'. Default 'DESC'.
+	 *     @type string|array $type          Limit results to those affiliated with a given type. Default empty
+	 *                                       string.
+	 *     @type string|array $url           Limit results to those that occurred with a given URL. Default empty
+	 *                                       string.
+	 *     @type string|array $user_agent    Limit results to those that occurred with a given user agent. Default
+	 *                                       empty string.
+	 *     @type array        $date_query    Date query clauses to limit reports by. Valid columns are 'triggered'
+	 *                                       and 'reported', with the latter being the default column. See
+	 *                                       WP_Date_Query. Default null.
+	 *     @type string       $search        Search term(s) to retrieve matching reports for. Default empty.
+	 *     @type string       $fields        Report fields to return. Accepts 'ids' (returns an array of report IDs),
+	 *                                       'count' (returns a report count) or 'all' (returns an array of complete
+	 *                                       report objects).
+	 *     @type bool         $update_cache  Whether to prime the cache for found reports. Default true.
 	 * }
 	 */
 	public function __construct( Reports $reports, array $query_vars ) {
@@ -138,12 +141,13 @@ class Report_Query {
 			'number'         => 10,
 			'offset'         => 0,
 			'no_found_rows'  => false,
-			'orderby'        => 'last_reported',
+			'orderby'        => 'reported',
 			'order'          => 'DESC',
 			'type'           => '',
+			'url'            => '',
+			'user_agent'     => '',
 			'date_query'     => null,
 			'search'         => '',
-			'search_columns' => array(),
 			'fields'         => 'all',
 			'update_cache'   => true,
 		);
@@ -217,7 +221,7 @@ class Report_Query {
 		}
 
 		// Convert to Report instances.
-		$this->results = array_filter( array_map( array( $this->reports, 'get_report' ), $result_ids ) );
+		$this->results = array_filter( array_map( array( $this->reports, 'get' ), $result_ids ) );
 
 		return $this->results;
 	}
@@ -237,47 +241,33 @@ class Report_Query {
 
 		$table_name = $this->reports->get_db_table_name();
 
-		$fields = "{$table_name}.id";
-		if ( 'count' === $this->query_vars['fields'] ) {
-			$fields = "COUNT({$fields})";
-		}
+		$fields     = $this->parse_fields();
+		$distinct   = '';
+		$limits     = $this->parse_limits();
+		$found_rows = ! $this->query_vars['no_found_rows'] ? 'SQL_CALC_FOUND_ROWS' : '';
 
-		$distinct = '';
+		// Get WHERE clauses and JOIN conditions.
+		list( $this->sql_clauses['where'], $join_conditions ) = $this->parse_where();
 
-		$number = $this->query_vars['number'];
-		$offset = $this->query_vars['offset'];
+		// Get ORDER BY clause.
+		$orderby = $this->parse_orderby();
 
-		if ( $number ) {
-			if ( $offset ) {
-				$limits = "LIMIT $offset,$number";
-			} else {
-				$limits = "LIMIT $number";
-			}
-		}
-
-		$found_rows = '';
-		if ( ! $this->query_vars['no_found_rows'] ) {
-			$found_rows = 'SQL_CALC_FOUND_ROWS';
-		}
-
-		$join_report_logs = false;
-
-		// TODO: Parse where args.
-		$this->sql_clauses['where'] = array();
-
-		// TODO: Parse orderby.
-		$orderby = $this->parse_orderby( $this->query_vars['orderby'], $this->query_vars['order'] );
-
-		$join    = '';
-		$groupby = '';
-		if ( $join_report_logs ) {
-			$report_logs_table_name = Plugin::instance()->report_logs()->get_db_table_name();
-
-			$join    = "INNER JOIN {$report_logs_table_name} AS l ON ({$table_name}.id = l.report_id)";
-			$groupby = "{$table_name}.id";
+		// If no JOIN conditions are present, but the ORDER BY clause requires a JOIN, add the default condition.
+		if ( empty( $join_conditions ) && preg_match( '/([^A-Za-z0-9]*)l\./', $orderby ) ) {
+			$join_conditions = array( 'default' => $this->get_default_join_condition() );
 		}
 
 		$where = implode( ' AND ', $this->sql_clauses['where'] );
+
+		$join    = '';
+		$groupby = '';
+		if ( ! empty( $join_conditions ) ) {
+			$report_logs_table_name = Plugin::instance()->report_logs()->get_db_table_name();
+
+			$join_conditions = implode( ' AND ', $join_conditions );
+			$join            = "INNER JOIN {$report_logs_table_name} AS l ON ({$join_conditions})";
+			$groupby         = "{$table_name}.id";
+		}
 
 		$pieces = array( 'fields', 'join', 'where', 'orderby', 'limits', 'groupby' );
 
@@ -303,7 +293,7 @@ class Report_Query {
 		}
 
 		$this->sql_clauses['select']  = "SELECT $distinct $found_rows $fields";
-		$this->sql_clauses['from']    = "FROM %{$table_name}% $join";
+		$this->sql_clauses['from']    = "FROM {$table_name} $join";
 		$this->sql_clauses['groupby'] = $groupby;
 		$this->sql_clauses['orderby'] = $orderby;
 		$this->sql_clauses['limits']  = $limits;
@@ -318,37 +308,124 @@ class Report_Query {
 	}
 
 	/**
-	 * Parses a given search string into an SQL clause for text search.
+	 * Returns the SQL field name to query.
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param string $search Search string.
-	 * @return string SQL to be used as a where clause.
+	 * @return string SQL for the fields to SELECT.
 	 */
-	protected function get_search_sql( $search ) {
+	protected function parse_fields() {
+		$table_name = $this->reports->get_db_table_name();
+
+		if ( 'count' === $this->query_vars['fields'] ) {
+			return "COUNT({$table_name}.id)";
+		}
+
+		return "{$table_name}.id";
+	}
+
+	/**
+	 * Parses the $number and $offset query variables into an SQL LIMIT clause.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return string SQL clause including LIMIT, or empty string if not relevant.
+	 */
+	protected function parse_limits() {
+		$number = $this->query_vars['number'];
+		$offset = $this->query_vars['offset'];
+
+		if ( $number ) {
+			if ( $offset ) {
+				return "LIMIT $offset,$number";
+			}
+
+			return "LIMIT $number";
+		}
+
+		return '';
+	}
+
+	/**
+	 * Parses query variables into an array of WHERE clauses and JOIN conditions.
+	 *
+	 * Table identifiers for the report logs table should use the 'l' alias.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @return array Array with the first item being the WHERE clauses array and the second item being the
+	 *               JOIN conditions array.
+	 */
+	protected function parse_where() {
 		global $wpdb;
 
 		$table_name = $this->reports->get_db_table_name();
 
-		if ( false !== strpos( $search, '*' ) ) {
-			$like = '%' . implode( '%', array_map( array( $wpdb, 'esc_like' ), explode( '*', $search ) ) ) . '%';
-		} else {
-			$like = '%' . $wpdb->esc_like( $search ) . '%';
+		$where_clauses   = array();
+		$join_conditions = array( 'default' => $this->get_default_join_condition() );
+
+		if ( ! empty( $this->query_vars['include'] ) ) {
+			$where_clauses['include'] = "{$table_name}.id IN ( " . implode( ',', wp_parse_id_list( $this->query_vars['include'] ) ) . ' )';
 		}
 
-		return $wpdb->prepare( "{$table_name}.body LIKE %s", $like ); // phpcs:ignore WordPress.DB.PreparedSQL
+		if ( ! empty( $this->query_vars['exclude'] ) ) {
+			$where_clauses['exclude'] = "{$table_name}.id NOT IN ( " . implode( ',', wp_parse_id_list( $this->query_vars['exclude'] ) ) . ' )';
+		}
+
+		if ( ! empty( $this->query_vars['type'] ) ) {
+			if ( is_array( $this->query_vars['type'] ) ) {
+				$where_clauses['type'] = "{$table_name}.type IN ( '" . implode( "', '", $wpdb->_escape( $this->query_vars['type'] ) ) . "' )";
+			} else {
+				$where_clauses['type'] = $wpdb->prepare( "{$table_name}.type = %s", $this->query_vars['type'] );
+			}
+		}
+
+		if ( ! empty( $this->query_vars['url'] ) ) {
+			if ( is_array( $this->query_vars['url'] ) ) {
+				$join_conditions['url'] = "l.url IN ( '" . implode( "', '", $wpdb->_escape( $this->query_vars['url'] ) ) . "' )";
+			} else {
+				$join_conditions['url'] = $wpdb->prepare( 'l.url = %s', $this->query_vars['url'] );
+			}
+		}
+
+		if ( ! empty( $this->query_vars['user_agent'] ) ) {
+			if ( is_array( $this->query_vars['user_agent'] ) ) {
+				$join_conditions['user_agent'] = "l.user_agent IN ( '" . implode( "', '", $wpdb->_escape( $this->query_vars['user_agent'] ) ) . "' )";
+			} else {
+				$join_conditions['user_agent'] = $wpdb->prepare( 'l.user_agent = %s', $this->query_vars['user_agent'] );
+			}
+		}
+
+		if ( ! empty( $this->query_vars['search'] ) ) {
+			$where_clauses['search'] = $this->get_search_sql( $this->query_vars['search'] );
+		}
+
+		if ( ! empty( $this->query_vars['date_query'] ) && is_array( $this->query_vars['date_query'] ) ) {
+			$join_conditions['date_query'] = $this->get_date_query_sql( $this->query_vars['date_query'] );
+		}
+
+		// If there is only the default JOIN condition (which must be first), it isn't actually needed.
+		if ( count( $join_conditions ) === 1 ) {
+			$join_conditions = array();
+		}
+
+		return array( $where_clauses, $join_conditions );
 	}
 
 	/**
 	 * Parses the $orderby and $order query variables into an SQL orderby clause.
 	 *
+	 * Table identifiers for the report logs table should use the 'l' alias.
+	 *
 	 * @since 0.1.0
 	 *
-	 * @param array|string $orderby The orderby query variable.
-	 * @param string       $order   The order query variable.
 	 * @return string SQL to be appended to an `ORDER BY` clause.
 	 */
-	protected function parse_orderby( $orderby, $order ) {
+	protected function parse_orderby() {
+		$orderby    = $this->query_vars['orderby'];
+		$order      = $this->query_vars['order'];
 		$table_name = $this->reports->get_db_table_name();
 
 		if ( in_array( $orderby, array( 'none', array(), false ), true ) ) {
@@ -365,11 +442,10 @@ class Report_Query {
 		}
 
 		$valid_orderby = array(
-			'type'            => "{$table_name}.type",
-			'first_triggered' => 'MIN(l.triggered)',
-			'first_reported'  => 'MIN(l.reported)',
-			'last_triggered'  => 'MAX(l.triggered)',
-			'last_reported'   => 'MAX(l.reported)',
+			'id'        => "{$table_name}.id",
+			'type'      => "{$table_name}.type",
+			'triggered' => 'l.triggered',
+			'reported'  => 'l.reported',
 		);
 
 		$orderby_array = array();
@@ -393,6 +469,78 @@ class Report_Query {
 	}
 
 	/**
+	 * Parses a given search string into an SQL clause for text search.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param string $search Search string.
+	 * @return string SQL to be used as a WHERE clause.
+	 */
+	protected function get_search_sql( $search ) {
+		global $wpdb;
+
+		$table_name = $this->reports->get_db_table_name();
+
+		if ( false !== strpos( $search, '*' ) ) {
+			$like = '%' . implode( '%', array_map( array( $wpdb, 'esc_like' ), explode( '*', $search ) ) ) . '%';
+		} else {
+			$like = '%' . $wpdb->esc_like( $search ) . '%';
+		}
+
+		return $wpdb->prepare( "{$table_name}.body LIKE %s", $like ); // phpcs:ignore WordPress.DB.PreparedSQL
+	}
+
+	/**
+	 * Parses a given date query array into an SQL clause.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param array $date_query Date query array.
+	 * @return string SQL to be used as a JOIN clause.
+	 */
+	protected function get_date_query_sql( array $date_query ) {
+		$date_query_filter = function( array $valid_columns ) {
+			$valid_columns[] = 'triggered';
+			$valid_columns[] = 'reported';
+			return $valid_columns;
+		};
+
+		add_filter( 'date_query_valid_columns', $date_query_filter );
+
+		$this->date_query         = new WP_Date_Query( $date_query, 'reported' );
+		$this->date_query->column = 'reported';
+
+		$sql = $this->date_query->get_sql();
+		$sql = str_replace(
+			array( 'triggered', 'reported' ),
+			array( 'l.triggered', 'l.reported' ),
+			$sql
+		);
+		$sql = preg_replace( '/^\s*AND\s*/', '', $sql );
+
+		remove_filter( 'date_query_valid_columns', $date_query_filter );
+
+		return $sql;
+	}
+
+	/**
+	 * Returns the default JOIN condition to join with the report logs table.
+	 *
+	 * Every query including any JOIN must include this as first condition.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return string SQL for JOIN condition.
+	 */
+	protected function get_default_join_condition() {
+		$table_name = $this->reports->get_db_table_name();
+
+		return "{$table_name}.id = l.report_id";
+	}
+
+	/**
 	 * Gets the number of found results.
 	 *
 	 * Depending on the query vars provided and the results returned, this method either queries the number of all
@@ -406,6 +554,8 @@ class Report_Query {
 	 * @return int Number of found results.
 	 */
 	protected function get_found_results( $result_ids ) {
+		global $wpdb;
+
 		// $result_ids is actually a count already in this case.
 		if ( 'count' === $this->query_vars['fields'] ) {
 			return (int) $result_ids;
