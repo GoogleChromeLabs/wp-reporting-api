@@ -31,7 +31,7 @@ class Reporting_Controller {
 	 * @since 0.1.0
 	 * @var string
 	 */
-	const NAMESPACE = 'reporting-api/v1';
+	const REST_NAMESPACE = 'reporting-api/v1';
 
 	/**
 	 * The base of this controller's route.
@@ -77,7 +77,7 @@ class Reporting_Controller {
 	 */
 	public function register_routes() {
 		register_rest_route(
-			self::NAMESPACE,
+			self::REST_NAMESPACE,
 			'/' . self::REST_BASE,
 			array(
 				array(
