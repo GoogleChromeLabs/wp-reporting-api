@@ -268,10 +268,12 @@ class Reports {
 
 		if ( null === $types ) {
 			$types = array(
-				'csp'          => __( 'Content Security Policy', 'reporting-api' ),
-				'deprecation'  => __( 'Deprecation', 'reporting-api' ),
-				'intervention' => __( 'Intervention', 'reporting-api' ),
-				'crash'        => __( 'Crash', 'reporting-api' ),
+				'csp'                      => __( 'Content Security Policy', 'reporting-api' ),
+				'crash'                    => __( 'Crash', 'reporting-api' ),
+				'deprecation'              => __( 'Deprecation', 'reporting-api' ),
+				'feature-policy-violation' => __( 'Feature Policy Violation', 'reporting-api' ),
+				'intervention'             => __( 'Intervention', 'reporting-api' ),
+				'network-error'            => __( 'Network Error', 'reporting-api' ),
 			);
 		}
 
