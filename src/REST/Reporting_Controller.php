@@ -31,7 +31,7 @@ class Reporting_Controller {
 	 * @since 0.1.0
 	 * @var string
 	 */
-	protected $namespace = 'reporting-api/v1';
+	const NAMESPACE = 'reporting-api/v1';
 
 	/**
 	 * The base of this controller's route.
@@ -39,20 +39,7 @@ class Reporting_Controller {
 	 * @since 0.1.0
 	 * @var string
 	 */
-	protected $rest_base = 'reporting';
-
-	/**
-	 * List of valid report types.
-	 *
-	 * @since 0.1.0
-	 * @var array
-	 */
-	protected $valid_types = array(
-		'csp',
-		'deprecation',
-		'intervention',
-		'crash',
-	);
+	const REST_BASE = 'reporting';
 
 	/**
 	 * The reports controller instance.
@@ -71,7 +58,7 @@ class Reporting_Controller {
 	protected $report_logs;
 
 	/**
-	 * Sets the plugin main file.
+	 * Constructor.
 	 *
 	 * @since 0.1.0
 	 *
@@ -90,8 +77,8 @@ class Reporting_Controller {
 	 */
 	public function register_routes() {
 		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base,
+			self::NAMESPACE,
+			'/' . self::REST_BASE,
 			array(
 				array(
 					'methods'             => WP_REST_Server::CREATABLE,
@@ -233,7 +220,7 @@ class Reporting_Controller {
 							'sanitize_callback' => 'rest_sanitize_request_arg',
 							'description'       => __( 'The report type.', 'reporting-api' ),
 							'type'              => 'string',
-							'enum'              => $this->valid_types,
+							'enum'              => array_keys( Reports::get_types() ),
 							'required'          => true,
 						),
 						'url'        => array(

@@ -113,11 +113,24 @@ class Plugin {
 			}
 		);
 
+		add_filter(
+			'user_has_cap',
+			array( $this, 'grant_reporting_api_cap' )
+		);
+
 		add_action(
 			'rest_api_init',
 			function() {
 				$controller = new REST\Reporting_Controller( $this->reports, $this->report_logs );
 				$controller->register_routes();
+			}
+		);
+
+		add_action(
+			'admin_menu',
+			function() {
+				$admin_screen = new Admin\Reporting_Screen( $this->reports, $this->report_logs );
+				$admin_screen->register_menu();
 			}
 		);
 	}
@@ -155,6 +168,25 @@ class Plugin {
 	 */
 	public function url( $relative_path = '/' ) {
 		return plugin_dir_url( $this->main_file ) . ltrim( $relative_path, '/' );
+	}
+
+	/**
+	 * Dynamically grants the 'manage_reporting_api' capability based on 'manage_options'.
+	 *
+	 * This method is hooked into the `user_has_cap` filter and can be unhooked and replaced with custom functionality
+	 * if needed.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param array $allcaps Associative array of $cap => $grant pairs.
+	 * @return array Filtered $allcaps array.
+	 */
+	public function grant_reporting_api_cap( array $allcaps ) {
+		if ( isset( $allcaps['manage_options'] ) ) {
+			$allcaps[ Admin\Reporting_Screen::CAPABILITY ] = $allcaps['manage_options'];
+		}
+
+		return $allcaps;
 	}
 
 	/**

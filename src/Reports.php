@@ -255,4 +255,26 @@ class Reports {
 
 		return $args;
 	}
+
+	/**
+	 * Gets the supported report types.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return array Associative array of $type_slug => $type_label pairs.
+	 */
+	public static function get_types() {
+		static $types = null;
+
+		if ( null === $types ) {
+			$types = array(
+				'csp'          => __( 'Content Security Policy', 'reporting-api' ),
+				'deprecation'  => __( 'Deprecation', 'reporting-api' ),
+				'intervention' => __( 'Intervention', 'reporting-api' ),
+				'crash'        => __( 'Crash', 'reporting-api' ),
+			);
+		}
+
+		return $types;
+	}
 }
