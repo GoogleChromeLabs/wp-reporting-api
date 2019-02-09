@@ -9,8 +9,9 @@
 
 namespace Google\WP_Reporting_API\REST;
 
-use Google\WP_Reporting_API\Plugin;
+use Google\WP_Reporting_API\Reports;
 use Google\WP_Reporting_API\Report;
+use Google\WP_Reporting_API\Report_Logs;
 use Google\WP_Reporting_API\Report_Log;
 use WP_REST_Server;
 use WP_REST_Request;
@@ -52,6 +53,35 @@ class Reporting_Controller {
 		'intervention',
 		'crash',
 	);
+
+	/**
+	 * The reports controller instance.
+	 *
+	 * @since 0.1.0
+	 * @var Reports
+	 */
+	protected $reports;
+
+	/**
+	 * The report logs controller instance.
+	 *
+	 * @since 0.1.0
+	 * @var Report_Logs
+	 */
+	protected $report_logs;
+
+	/**
+	 * Sets the plugin main file.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @param Reports     $reports     The reports controller instance.
+	 * @param Report_Logs $report_logs The report logs controller instance.
+	 */
+	public function __construct( Reports $reports, Report_Logs $report_logs ) {
+		$this->reports     = $reports;
+		$this->report_logs = $report_logs;
+	}
 
 	/**
 	 * Registers the routes for the controller.
@@ -100,10 +130,9 @@ class Reporting_Controller {
 		}
 
 		$now         = current_time( 'timestamp', 1 );
-		$reports     = Plugin::instance()->reports();
-		$report_logs = Plugin::instance()->report_logs();
+		$report_logs = $request->get_param( 'data' );
 
-		$existing_reports = $reports->query(
+		$existing_reports = $this->reports->query(
 			array(
 				'body'   => array_map( 'wp_json_encode', array_filter( wp_list_pluck( $report_logs, 'body' ) ) ),
 				'number' => 100,
@@ -116,8 +145,6 @@ class Reporting_Controller {
 
 		$errors  = new WP_Error();
 		$log_ids = array();
-
-		$report_logs = $request->get_param( 'data' );
 		foreach ( $report_logs as $report_log ) {
 			if ( ! $report_log['body'] ) {
 				$errors->add( 'empty_report_body', __( 'Empty report body.', 'reporting-api' ) );
@@ -129,7 +156,7 @@ class Reporting_Controller {
 			if ( isset( $existing_reports[ $key ] ) ) {
 				$report_id = $existing_reports[ $key ]->id;
 			} else {
-				$report = $reports->insert(
+				$report = $this->reports->insert(
 					new Report(
 						array(
 							'type' => $report_log['type'],
@@ -148,7 +175,7 @@ class Reporting_Controller {
 				$report_id = $report->id;
 			}
 
-			$report_log = $report_logs->insert(
+			$report_log = $this->report_logs->insert(
 				new Report_Log(
 					array(
 						'report_id'  => $report_id,
