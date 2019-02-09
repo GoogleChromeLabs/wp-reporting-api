@@ -135,20 +135,20 @@ class Report_Log_Query {
 	public function __construct( Report_Logs $report_logs, array $query_vars ) {
 		$this->report_logs        = $report_logs;
 		$this->query_var_defaults = array(
-			'include'        => array(),
-			'exclude'        => array(),
-			'number'         => 10,
-			'offset'         => 0,
-			'no_found_rows'  => false,
-			'orderby'        => 'reported',
-			'order'          => 'DESC',
-			'report_id'      => 0,
-			'url'            => '',
-			'user_agent'     => '',
-			'date_query'     => null,
-			'search'         => '',
-			'fields'         => 'all',
-			'update_cache'   => true,
+			'include'       => array(),
+			'exclude'       => array(),
+			'number'        => 10,
+			'offset'        => 0,
+			'no_found_rows' => false,
+			'orderby'       => 'reported',
+			'order'         => 'DESC',
+			'report_id'     => 0,
+			'url'           => '',
+			'user_agent'    => '',
+			'date_query'    => null,
+			'search'        => '',
+			'fields'        => 'all',
+			'update_cache'  => true,
 		);
 
 		$this->parse_query_vars( $query_vars );
@@ -360,14 +360,14 @@ class Report_Log_Query {
 		}
 
 		if ( ! empty( $this->query_vars['report_id'] ) ) {
-			$where_clauses['report_id'] = $wpdb->prepare( "{$table_name}.report_id = %d", (int) $this->query_vars['report_id'] );
+			$where_clauses['report_id'] = $wpdb->prepare( "{$table_name}.report_id = %d", (int) $this->query_vars['report_id'] ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		}
 
 		if ( ! empty( $this->query_vars['url'] ) ) {
 			if ( is_array( $this->query_vars['url'] ) ) {
 				$where_clauses['url'] = "{$table_name}.url IN ( '" . implode( "', '", $wpdb->_escape( $this->query_vars['url'] ) ) . "' )";
 			} else {
-				$where_clauses['url'] = $wpdb->prepare( "{$table_name}.url = %s", $this->query_vars['url'] );
+				$where_clauses['url'] = $wpdb->prepare( "{$table_name}.url = %s", $this->query_vars['url'] ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			}
 		}
 
@@ -375,7 +375,7 @@ class Report_Log_Query {
 			if ( is_array( $this->query_vars['user_agent'] ) ) {
 				$where_clauses['user_agent'] = "{$table_name}.user_agent IN ( '" . implode( "', '", $wpdb->_escape( $this->query_vars['user_agent'] ) ) . "' )";
 			} else {
-				$where_clauses['user_agent'] = $wpdb->prepare( "{$table_name}.user_agent = %s", $this->query_vars['user_agent'] );
+				$where_clauses['user_agent'] = $wpdb->prepare( "{$table_name}.user_agent = %s", $this->query_vars['user_agent'] ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			}
 		}
 

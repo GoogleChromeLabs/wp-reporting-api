@@ -115,7 +115,7 @@ class Reporting_Screen {
 			}
 			if ( ! empty( $search ) ) {
 				/* translators: %s: search keywords */
-				printf( ' <span class="subtitle">' . __( 'Search results for &#8220;%s&#8221;' ) . '</span>', esc_html( $search ) );
+				printf( ' <span class="subtitle">' . __( 'Search results for &#8220;%s&#8221;', 'reporting-api' ) . '</span>', esc_html( $search ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 			?>
 			<hr class="wp-header-end">

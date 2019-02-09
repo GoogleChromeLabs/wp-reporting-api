@@ -242,29 +242,32 @@ class Reports_List_Table extends WP_List_Table {
 
 			$extra = '';
 			if ( ! empty( $type ) ) {
-				$extra = $wpdb->prepare( "INNER JOIN {$reports_table_name} AS r ON ({$report_logs_table_name}.report_id = r.id AND r.type = %s)", $type );
+				$extra = $wpdb->prepare( "INNER JOIN {$reports_table_name} AS r ON ({$report_logs_table_name}.report_id = r.id AND r.type = %s)", $type ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			}
 
 			$request = "SELECT DISTINCT YEAR( triggered ) AS year, MONTH( triggered ) AS month FROM $report_logs_table_name $extra ORDER BY triggered DESC";
-			$months  = $wpdb->get_results( $request );
+			$months  = $wpdb->get_results( $request ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.NotPrepared
 
 			wp_cache_add( $cache_key, $months, Reports::CACHE_GROUP );
 		}
 
 		$month_count = count( $months );
 
-		if ( ! $month_count || ( 1 == $month_count && 0 == $months[0]->month ) ) {
+		if ( ! $month_count || ( 1 === $month_count && 0 === $months[0]->month ) ) {
 			return;
 		}
 
-		$m = isset( $_GET['m'] ) ? (int) $_GET['m'] : 0;
+		$m = filter_input( INPUT_GET, 'm', FILTER_VALIDATE_INT );
+		if ( ! $m ) {
+			$m = 0;
+		}
 		?>
 		<label for="filter-by-date" class="screen-reader-text"><?php esc_html_e( 'Filter by date', 'reporting-api' ); ?></label>
 		<select name="m" id="filter-by-date">
 			<option<?php selected( $m, 0 ); ?> value="0"><?php esc_html_e( 'All dates', 'reporting-api' ); ?></option>
 		<?php
 		foreach ( $months as $arc_row ) {
-			if ( 0 == $arc_row->year ) {
+			if ( 0 === (int) $arc_row->year ) {
 				continue;
 			}
 
@@ -276,7 +279,7 @@ class Reports_List_Table extends WP_List_Table {
 				selected( $m, $year . $month, false ),
 				esc_attr( $arc_row->year . $month ),
 				/* translators: 1: month name, 2: 4-digit year */
-				sprintf( __( '%1$s %2$d', 'reporting-api' ), $wp_locale->get_month( $month ), $year )
+				sprintf( __( '%1$s %2$d', 'reporting-api' ), $wp_locale->get_month( $month ), $year ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			);
 		}
 		?>

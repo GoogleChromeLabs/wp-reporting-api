@@ -138,21 +138,21 @@ class Report_Query {
 	public function __construct( Reports $reports, array $query_vars ) {
 		$this->reports            = $reports;
 		$this->query_var_defaults = array(
-			'include'        => array(),
-			'exclude'        => array(),
-			'number'         => 10,
-			'offset'         => 0,
-			'no_found_rows'  => false,
-			'orderby'        => 'reported',
-			'order'          => 'DESC',
-			'type'           => '',
-			'body'           => '',
-			'url'            => '',
-			'user_agent'     => '',
-			'date_query'     => null,
-			'search'         => '',
-			'fields'         => 'all',
-			'update_cache'   => true,
+			'include'       => array(),
+			'exclude'       => array(),
+			'number'        => 10,
+			'offset'        => 0,
+			'no_found_rows' => false,
+			'orderby'       => 'reported',
+			'order'         => 'DESC',
+			'type'          => '',
+			'body'          => '',
+			'url'           => '',
+			'user_agent'    => '',
+			'date_query'    => null,
+			'search'        => '',
+			'fields'        => 'all',
+			'update_cache'  => true,
 		);
 
 		$this->parse_query_vars( $query_vars );
@@ -381,7 +381,7 @@ class Report_Query {
 			if ( is_array( $this->query_vars['type'] ) ) {
 				$where_clauses['type'] = "{$table_name}.type IN ( '" . implode( "', '", $wpdb->_escape( $this->query_vars['type'] ) ) . "' )";
 			} else {
-				$where_clauses['type'] = $wpdb->prepare( "{$table_name}.type = %s", $this->query_vars['type'] );
+				$where_clauses['type'] = $wpdb->prepare( "{$table_name}.type = %s", $this->query_vars['type'] ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			}
 		}
 
@@ -389,7 +389,7 @@ class Report_Query {
 			if ( is_array( $this->query_vars['body'] ) ) {
 				$where_clauses['body'] = "{$table_name}.body IN ( '" . implode( "', '", $wpdb->_escape( $this->query_vars['body'] ) ) . "' )";
 			} else {
-				$where_clauses['body'] = $wpdb->prepare( "{$table_name}.body = %s", $this->query_vars['body'] );
+				$where_clauses['body'] = $wpdb->prepare( "{$table_name}.body = %s", $this->query_vars['body'] ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			}
 		}
 
