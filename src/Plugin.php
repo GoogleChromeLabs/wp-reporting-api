@@ -112,6 +112,14 @@ class Plugin {
 				$this->install_db_tables();
 			}
 		);
+
+		add_action(
+			'rest_api_init',
+			function() {
+				$controller = new REST_Reporting_Controller();
+				$controller->register_routes();
+			}
+		);
 	}
 
 	/**

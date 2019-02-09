@@ -119,7 +119,7 @@ class Report_Query {
 	 *     @type string       $order         How to order retrieved reports. Accepts 'ASC', 'DESC'. Default 'DESC'.
 	 *     @type string|array $type          Limit results to those affiliated with a given type. Default empty
 	 *                                       string.
-	 *     @type string       $body          Limit results to those affiliated with a given body as JSON-encoded
+	 *     @type string|array $body          Limit results to those affiliated with a given body as JSON-encoded
 	 *                                       string. Default empty string.
 	 *     @type string|array $url           Limit results to those that occurred with a given URL. Default empty
 	 *                                       string.
@@ -386,7 +386,11 @@ class Report_Query {
 		}
 
 		if ( ! empty( $this->query_vars['body'] ) ) {
-			$where_clauses['body'] = $wpdb->prepare( "{$table_name}.body = %s", $this->query_vars['body'] );
+			if ( is_array( $this->query_vars['body'] ) ) {
+				$where_clauses['body'] = "{$table_name}.body IN ( '" . implode( "', '", $wpdb->_escape( $this->query_vars['body'] ) ) . "' )";
+			} else {
+				$where_clauses['body'] = $wpdb->prepare( "{$table_name}.body = %s", $this->query_vars['body'] );
+			}
 		}
 
 		if ( ! empty( $this->query_vars['url'] ) ) {
