@@ -1,14 +1,17 @@
 <?php
 /**
- * Class Google\WP_Reporting_API\REST_Reporting_Controller
+ * Class Google\WP_Reporting_API\REST\Reporting_Controller
  *
  * @package Google\WP_Reporting_API
  * @license GNU General Public License, version 2
  * @link    https://wordpress.org/plugins/reporting-api/
  */
 
-namespace Google\WP_Reporting_API;
+namespace Google\WP_Reporting_API\REST;
 
+use Google\WP_Reporting_API\Plugin;
+use Google\WP_Reporting_API\Report;
+use Google\WP_Reporting_API\Report_Log;
 use WP_REST_Server;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -19,7 +22,7 @@ use WP_Error;
  *
  * @since 0.1.0
  */
-class REST_Reporting_Controller {
+class Reporting_Controller {
 
 	/**
 	 * The namespace of this controller's route.

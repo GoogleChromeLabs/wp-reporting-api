@@ -116,7 +116,7 @@ class Plugin {
 		add_action(
 			'rest_api_init',
 			function() {
-				$controller = new REST_Reporting_Controller();
+				$controller = new REST\Reporting_Controller();
 				$controller->register_routes();
 			}
 		);
