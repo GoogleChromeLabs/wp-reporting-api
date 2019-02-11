@@ -2,9 +2,10 @@
 /**
  * Class Google\WP_Reporting_API\Tests\PHPUnit\Framework\Unit_Test_Case
  *
- * @package Google\WP_Reporting_API
- * @license GNU General Public License, version 2
- * @link    https://wordpress.org/plugins/reporting-api/
+ * @package   Google\WP_Reporting_API
+ * @copyright 2019 Google LLC
+ * @license   GNU General Public License, version 2
+ * @link      https://wordpress.org/plugins/reporting-api/
  */
 
 namespace Google\WP_Reporting_API\Tests\PHPUnit\Framework;

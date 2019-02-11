@@ -2,21 +2,21 @@
 /**
  * Plugin initialization file
  *
- * @package Google\WP_Reporting_API
- * @license GNU General Public License, version 2
- * @link    https://wordpress.org/plugins/reporting-api/
+ * @package   Google\WP_Reporting_API
+ * @copyright 2019 Google LLC
+ * @license   GNU General Public License, version 2
+ * @link      https://wordpress.org/plugins/reporting-api/
  *
  * @wordpress-plugin
  * Plugin Name: Reporting API
  * Plugin URI:  https://wordpress.org/plugins/reporting-api/
- * Description: WordPress plugin for implementing an endpoint for tbrowser reporting.
+ * Description: WordPress plugin for implementing an endpoint for browser reporting.
  * Version:     0.1.0
  * Author:      Google
  * Author URI:  https://opensource.google.com/
  * License:     GNU General Public License v2 (or later)
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: reporting-api
- * Tags:        reporting, api
  */
 
 /* This file must be parseable by PHP 5.2. */
