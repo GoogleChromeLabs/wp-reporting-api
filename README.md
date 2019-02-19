@@ -1,8 +1,8 @@
 [![WordPress plugin](https://img.shields.io/wordpress/plugin/v/reporting-api.svg?maxAge=2592000)](https://wordpress.org/plugins/reporting-api/)
 [![WordPress](https://img.shields.io/wordpress/v/reporting-api.svg?maxAge=2592000)](https://wordpress.org/plugins/reporting-api/)
 [![Build Status](https://api.travis-ci.org/GoogleChromeLabs/wp-reporting-api.png?branch=master)](https://travis-ci.org/GoogleChromeLabs/wp-reporting-api)
-[![Latest Stable Version](https://poser.pugx.org/GoogleChromeLabs/wp-reporting-api/version)](https://packagist.org/packages/GoogleChromeLabs/wp-reporting-api)
-[![License](https://poser.pugx.org/GoogleChromeLabs/wp-reporting-api/license)](https://packagist.org/packages/GoogleChromeLabs/wp-reporting-api)
+[![Latest Stable Version](https://poser.pugx.org/google/wp-reporting-api/version)](https://packagist.org/packages/google/wp-reporting-api)
+[![License](https://poser.pugx.org/google/wp-reporting-api/license)](https://packagist.org/packages/google/wp-reporting-api)
 
 # Reporting API
 

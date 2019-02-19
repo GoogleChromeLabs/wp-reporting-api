@@ -1,5 +1,5 @@
 {
-  "name": "google/reporting-api",
+  "name": "google/wp-reporting-api",
   "description": "WordPress plugin for implementing an endpoint for browser reporting.",
   "version": "0.1.0",
   "license": "GPL-2.0-or-later",
