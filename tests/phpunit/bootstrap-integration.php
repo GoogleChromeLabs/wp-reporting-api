@@ -21,7 +21,7 @@ require_once TESTS_PLUGIN_DIR . '/vendor/autoload.php';
 if ( false !== getenv( 'WP_PLUGIN_DIR' ) ) {
 	define( 'WP_PLUGIN_DIR', getenv( 'WP_PLUGIN_DIR' ) );
 } else {
-	define( 'WP_PLUGIN_DIR', TESTS_PLUGIN_DIR );
+	define( 'WP_PLUGIN_DIR', dirname( TESTS_PLUGIN_DIR ) );
 }
 
 // Detect where to load the WordPress tests environment from.
@@ -32,7 +32,7 @@ if ( false !== getenv( 'WP_TESTS_DIR' ) ) {
 } elseif ( file_exists( '/tmp/wordpress-tests-lib/includes/bootstrap.php' ) ) {
 	$test_root = '/tmp/wordpress-tests-lib';
 } else {
-	$test_root = dirname( dirname( dirname( TESTS_PLUGIN_DIR ) ) ) . '/tests/phpunit';
+	$test_root = dirname( dirname( dirname( dirname( TESTS_PLUGIN_DIR ) ) ) ) . '/tests/phpunit';
 }
 
 // PHPUnit < 6.0 compatibility shim.
@@ -60,7 +60,7 @@ if ( ! file_exists( $test_root . '/includes/phpunit6-compat.php' ) && class_exis
 
 // Ensure the plugin is loaded.
 $GLOBALS['wp_tests_options'] = array(
-	'active_plugins' => array( 'reporting-api/reporting-api.php' ),
+	'active_plugins' => array( basename( TESTS_PLUGIN_DIR ) . '/reporting-api.php' ),
 );
 
 // Load the WordPress tests environment.
