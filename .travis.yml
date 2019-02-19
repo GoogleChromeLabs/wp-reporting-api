@@ -49,21 +49,7 @@ before_install:
         phpenv config-rm xdebug.ini
       fi
     fi
-  - |
-    case "$TRAVIS_PHP_VERSION" in
-      5.6|5.5|5.4|5.3)
-        composer global require "phpunit/phpunit:^4"
-        composer install
-        PHPUNIT_BIN="phpunit"
-        ;;
-      5.2)
-        PHPUNIT_BIN="phpunit"
-        ;;
-      *)
-        composer install
-        PHPUNIT_BIN="vendor/bin/phpunit"
-        ;;
-    esac
+  - composer install
 before_script:
   - |
     if [[ "$INTEGRATION" == "1" ]]; then
@@ -102,18 +88,18 @@ script:
     if [[ "$UNIT" == "1" ]]; then
       if [[ "$COVERAGE" == "1" ]]; then
         mkdir -p tests/logs
-        $PHPUNIT_BIN --coverage-clover tests/logs/clover.xml
+        composer run-script phpunit-cov
       else
-        $PHPUNIT_BIN
+        composer run-script phpunit
       fi
     fi
   - |
     if [[ "$INTEGRATION" == "1" ]]; then
       if [[ "$COVERAGE" == "1" ]]; then
         mkdir -p tests/logs
-        $PHPUNIT_BIN -c phpunit-integration.xml.dist --coverage-clover tests/logs/clover.xml
+        composer run-script phpunit-integration-cov
       else
-        $PHPUNIT_BIN -c phpunit-integration.xml.dist
+        composer run-script phpunit-integration
       fi
     fi
 after_script:
