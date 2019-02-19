@@ -10,7 +10,7 @@
  * @wordpress-plugin
  * Plugin Name: Reporting API
  * Plugin URI:  https://wordpress.org/plugins/reporting-api/
- * Description: WordPress plugin for implementing an endpoint for browser reporting.
+ * Description: WordPress plugin for receiving browser reports via a Reporting API endpoint.
  * Version:     0.1.0
  * Author:      Google
  * Author URI:  https://opensource.google.com/

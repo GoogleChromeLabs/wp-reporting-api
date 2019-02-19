@@ -6,7 +6,7 @@
 
 # Reporting API
 
-WordPress plugin for implementing an endpoint for browser reporting.
+WordPress plugin for receiving browser reports via a Reporting API endpoint.
 
 ## Requirements
 

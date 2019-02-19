@@ -9,7 +9,7 @@ License:           GNU General Public License v2 (or later)
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 Tags:              reporting, api
 
-WordPress plugin for implementing an endpoint for browser reporting.
+WordPress plugin for receiving browser reports via a Reporting API endpoint.
 
 == Description ==
 
