@@ -7,29 +7,29 @@ cache:
     - $HOME/.composer/cache
 matrix:
   include:
-    - php: 7.2
+    - php: 7.3
       env: UNIT=1 PHPLINT=1 PHPCS=1 COVERAGE=1
     - php: 5.6
       env: UNIT=1 PHPLINT=1
       dist: trusty
-    - php: 7.2
+    - php: 7.3
       env: INTEGRATION=1 WP_VERSION=latest
     - php: 5.6
       env: INTEGRATION=1 WP_VERSION=latest
       dist: trusty
-    - php: 7.2
+    - php: 7.3
       env: INTEGRATION=1 WP_VERSION=4.7
     - php: 5.6
       env: INTEGRATION=1 WP_VERSION=4.7
       dist: trusty
     - php: nightly
       env: UNIT=1
-    - php: 7.2
+    - php: 7.3
       env: INTEGRATION=1 WP_VERSION=master
   allow_failures:
     - php: nightly
       env: UNIT=1
-    - php: 7.2
+    - php: 7.3
       env: INTEGRATION=1 WP_VERSION=master
 before_install:
   - |
