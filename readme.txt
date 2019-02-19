@@ -2,7 +2,7 @@
 
 Contributors:      google, flixos90, westonruter
 Requires at least: 4.7
-Tested up to:      5.0
+Tested up to:      5.1
 Requires PHP:      5.6
 Stable tag:        0.1.0
 License:           GNU General Public License v2 (or later)
