@@ -273,6 +273,7 @@ class Reports {
 				'crash'                    => __( 'Crash', 'reporting-api' ),
 				'deprecation'              => __( 'Deprecation', 'reporting-api' ),
 				'feature-policy-violation' => __( 'Feature Policy Violation', 'reporting-api' ),
+				'hpkp'                     => __( 'HTTP Public Key Pinning', 'reporting-api' ),
 				'intervention'             => __( 'Intervention', 'reporting-api' ),
 				'network-error'            => __( 'Network Error', 'reporting-api' ),
 			);
