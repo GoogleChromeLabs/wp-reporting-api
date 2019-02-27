@@ -258,6 +258,10 @@ class Plugin {
 			return;
 		}
 
+		if ( ! function_exists( 'dbDelta' ) ) {
+			require_once ABSPATH . '/wp-admin/includes/upgrade.php';
+		}
+
 		dbDelta( implode( "\n", $queries ) );
 	}
 
