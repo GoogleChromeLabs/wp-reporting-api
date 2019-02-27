@@ -251,7 +251,7 @@ class Plugin {
 			);
 			$report_logs_schema = "\n\t" . implode( ",\n\t", $report_logs_schema ) . "\n";
 
-			$queries[] = "CREATE TABLE {$wpdb->{$reports_table}} ({$reports_schema}) {$charset_collate};";
+			$queries[] = "CREATE TABLE {$wpdb->{$report_logs_table}} ({$report_logs_schema}) {$charset_collate};";
 		}
 
 		if ( empty( $queries ) ) {
