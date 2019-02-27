@@ -75,9 +75,61 @@ class Reports_List_Table extends WP_List_Table {
 	 * Prepares the list of items for displaying.
 	 *
 	 * @since 0.1.0
+	 *
+	 * @global string $mode List table view mode.
 	 */
 	public function prepare_items() {
-		// TODO.
+		global $mode;
+
+		$mode = filter_input( INPUT_GET, 'mode', FILTER_SANITIZE_STRING ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.OverrideProhibited
+		if ( ! empty( $mode ) && in_array( $mode, array( 'excerpt', 'list' ), true ) ) {
+			set_user_setting( "{$this->screen->id}_list_mode", $mode );
+		} else {
+			$mode = get_user_setting( "{$this->screen->id}_list_mode", 'list' ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.OverrideProhibited
+		}
+
+		$page     = $this->get_pagenum();
+		$per_page = $this->get_items_per_page( "{$this->screen->id}_per_page" );
+
+		$args = array(
+			'number'        => $per_page,
+			'offset'        => ( $page - 1 ) * $per_page,
+			'no_found_rows' => false,
+			'type'          => filter_input( INPUT_GET, 'type', FILTER_SANITIZE_STRING ),
+			'search'        => filter_input( INPUT_GET, 's', FILTER_SANITIZE_STRING ),
+		);
+
+		$m = (string) filter_input( INPUT_GET, 'm', FILTER_VALIDATE_INT );
+		if ( ! empty( $m ) && strlen( $m ) === 6 ) {
+			$args['date_query'] = array(
+				'column'   => 'reported',
+				'relation' => 'AND',
+				array(
+					'year'  => substr( $m, 0, 4 ),
+					'month' => substr( $m, 4, 2 ),
+				),
+			);
+		}
+
+		$orderby = filter_input( INPUT_GET, 'orderby', FILTER_SANITIZE_STRING );
+		if ( ! empty( $orderby ) ) {
+			$args['orderby'] = $orderby;
+		}
+
+		$order = filter_input( INPUT_GET, 'order', FILTER_SANITIZE_STRING );
+		if ( ! empty( $order ) ) {
+			$args['order'] = strtoupper( $order );
+		}
+
+		$query = $this->reports->get_query( $args );
+
+		$this->items = $query->get_results();
+		$this->set_pagination_args(
+			array(
+				'total_items' => $query->found_results,
+				'per_page'    => $per_page,
+			)
+		);
 	}
 
 	/**
@@ -90,14 +142,43 @@ class Reports_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Displays the 'body' column for a given report.
+	 * Displays the 'id' column for a given report.
 	 *
 	 * @since 0.1.0
 	 *
 	 * @param Report $report Report to display column for.
 	 */
+	public function column_id( Report $report ) {
+		echo esc_html( $report->id );
+	}
+
+	/**
+	 * Displays the 'body' column for a given report.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @global string $mode List table view mode.
+	 *
+	 * @param Report $report Report to display column for.
+	 */
 	public function column_body( Report $report ) {
-		// TODO.
+		global $mode;
+
+		if ( 'excerpt' === $mode ) {
+			$json = wp_json_encode( $report->body, JSON_PRETTY_PRINT );
+			?>
+			<textarea class="widefat code" rows="5" readonly="readonly" disabled="disabled"><?php echo esc_textarea( $json ); ?></textarea>
+			<?php
+			return;
+		}
+
+		$json = wp_json_encode( $report->body );
+		if ( strlen( $json ) > 40 ) {
+			$json = substr( $json, 0, 39 ) . '&hellip;';
+		}
+		?>
+		<code><?php echo esc_html( $json ); ?></code>
+		<?php
 	}
 
 	/**
@@ -108,7 +189,27 @@ class Reports_List_Table extends WP_List_Table {
 	 * @param Report $report Report to display column for.
 	 */
 	public function column_type( Report $report ) {
-		// TODO.
+		$types = Reports::get_types();
+		$type  = $report->type;
+
+		if ( ! isset( $types[ $type ] ) ) {
+			return;
+		}
+
+		$filter_args = array_filter(
+			array(
+				'm'       => (string) filter_input( INPUT_GET, 'm', FILTER_VALIDATE_INT ),
+				'orderby' => filter_input( INPUT_GET, 'orderby', FILTER_SANITIZE_STRING ),
+				'order'   => filter_input( INPUT_GET, 'order', FILTER_SANITIZE_STRING ),
+				'type'    => $type,
+			)
+		);
+
+		$filter_url = add_query_arg( $filter_args );
+
+		?>
+		<a href="<?php echo esc_url( $filter_url ); ?>"><?php echo esc_html( $types[ $type ] ); ?></a>
+		<?php
 	}
 
 	/**
@@ -163,10 +264,11 @@ class Reports_List_Table extends WP_List_Table {
 	 * @return array Columns as $column_slug => $column_title pairs.
 	 */
 	public function get_columns() {
-		$type = filter_input( INPUT_GET, 'type' );
+		$type = filter_input( INPUT_GET, 'type', FILTER_SANITIZE_STRING );
 
 		$columns = array();
 
+		$columns['id']   = _x( 'ID', 'column name', 'reporting-api' );
 		$columns['body'] = _x( 'Details', 'column name', 'reporting-api' );
 
 		// Only include type column if not already filtered by it.
@@ -198,6 +300,44 @@ class Reports_List_Table extends WP_List_Table {
 	}
 
 	/**
+	 * Gets the list of CSS classes for the table tag.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return array List of CSS classes for the table tag.
+	 */
+	protected function get_table_classes() {
+		$classes = parent::get_table_classes();
+
+		$key = array_search( 'fixed', $classes, true );
+		if ( false !== $key ) {
+			unset( $classes[ $key ] );
+			$classes = array_values( $classes );
+		}
+
+		return $classes;
+	}
+
+	/**
+	 * Displays pagination UI.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @global string $mode List table view mode.
+	 *
+	 * @param string $which Either 'top' or 'bottom'.
+	 */
+	protected function pagination( $which ) {
+		global $mode;
+
+		parent::pagination( $which );
+
+		if ( 'top' === $which ) {
+			$this->view_switcher( $mode );
+		}
+	}
+
+	/**
 	 * Displays extra controls between bulk actions and pagination.
 	 *
 	 * @since 0.1.0
@@ -209,7 +349,7 @@ class Reports_List_Table extends WP_List_Table {
 			return;
 		}
 
-		$type = filter_input( INPUT_GET, 'type' );
+		$type = filter_input( INPUT_GET, 'type', FILTER_SANITIZE_STRING );
 
 		?>
 		<div class="alignleft actions">
@@ -278,7 +418,7 @@ class Reports_List_Table extends WP_List_Table {
 			printf(
 				"<option %s value='%s'>%s</option>\n",
 				selected( $m, $year . $month, false ),
-				esc_attr( $arc_row->year . $month ),
+				esc_attr( $year . $month ),
 				/* translators: 1: month name, 2: 4-digit year */
 				sprintf( __( '%1$s %2$d', 'reporting-api' ), $wp_locale->get_month( $month ), $year ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			);

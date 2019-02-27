@@ -610,7 +610,7 @@ class Report_Query {
 		}
 
 		foreach ( $fresh_results as $result ) {
-			wp_cache_add( $result->id, $result, Reports::CACHE_GROUP );
+			wp_cache_add( $result['id'], $result, Reports::CACHE_GROUP );
 		}
 	}
 

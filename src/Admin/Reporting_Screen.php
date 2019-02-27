@@ -28,7 +28,7 @@ class Reporting_Screen {
 	 * @since 0.1.0
 	 * @var string
 	 */
-	const SLUG = 'reporting-api';
+	const SLUG = 'reporting_api';
 
 	/**
 	 * The admin page parent slug.
@@ -63,6 +63,14 @@ class Reporting_Screen {
 	protected $report_logs;
 
 	/**
+	 * The list table for displaying reports.
+	 *
+	 * @since 0.1.0
+	 * @var Reports_List_Table
+	 */
+	protected $list_table;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 0.1.0
@@ -81,7 +89,20 @@ class Reporting_Screen {
 	 * @since 0.1.0
 	 */
 	public function register_menu() {
-		add_submenu_page( self::PARENT_SLUG, __( 'Reports', 'reporting-api' ), __( 'Reporting API', 'reporting-api' ), self::CAPABILITY, self::SLUG, array( $this, 'render_screen' ) );
+		$hook_suffix = add_submenu_page(
+			self::PARENT_SLUG,
+			__( 'Reports', 'reporting-api' ),
+			__( 'Reporting API', 'reporting-api' ),
+			self::CAPABILITY,
+			self::SLUG,
+			array( $this, 'render_screen' )
+		);
+		add_action(
+			"load-{$hook_suffix}",
+			function() {
+				$this->prepare_list();
+			}
+		);
 	}
 
 	/**
@@ -90,11 +111,8 @@ class Reporting_Screen {
 	 * @since 0.1.0
 	 */
 	public function render_screen() {
-		$list_table = new Reports_List_Table( $this->reports, $this->report_logs );
-		$list_table->prepare_items();
-
-		$type   = filter_input( INPUT_GET, 'type' );
-		$search = filter_input( INPUT_GET, 's' );
+		$type   = filter_input( INPUT_GET, 'type', FILTER_SANITIZE_STRING );
+		$search = filter_input( INPUT_GET, 's', FILTER_SANITIZE_STRING );
 
 		$title = __( 'Reports', 'reporting-api' );
 		if ( ! empty( $type ) ) {
@@ -121,11 +139,12 @@ class Reporting_Screen {
 			?>
 			<hr class="wp-header-end">
 
-			<?php $list_table->views(); ?>
+			<?php $this->list_table->views(); ?>
 
 			<form id="reports-filter" method="get">
-				<?php $list_table->search_box( __( 'Search reports', 'reporting-api' ), 'search-reports' ); ?>
+				<?php $this->list_table->search_box( __( 'Search reports', 'reporting-api' ), 'search-reports' ); ?>
 
+				<input type="hidden" name="page" value="<?php echo esc_attr( self::SLUG ); ?>" />
 				<?php
 				if ( ! empty( $type ) ) {
 					?>
@@ -134,9 +153,35 @@ class Reporting_Screen {
 				}
 				?>
 
-				<?php $list_table->display(); ?>
+				<?php $this->list_table->display(); ?>
 			</form>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Prepares the list table for displaying reports and runs the query.
+	 *
+	 * @since 0.1.0
+	 */
+	protected function prepare_list() {
+		$screen = get_current_screen();
+
+		$screen->add_option(
+			'per_page',
+			array(
+				'default' => 20,
+				'option'  => "{$screen->id}_per_page",
+			)
+		);
+		$screen->set_screen_reader_content(
+			array(
+				'heading_pagination' => __( 'Reports list navigation', 'reporting-api' ),
+				'heading_list'       => __( 'Reports list', 'reporting-api' ),
+			)
+		);
+
+		$this->list_table = new Reports_List_Table( $this->reports, $this->report_logs );
+		$this->list_table->prepare_items();
 	}
 }

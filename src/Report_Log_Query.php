@@ -562,7 +562,7 @@ class Report_Log_Query {
 		}
 
 		foreach ( $fresh_results as $result ) {
-			wp_cache_add( $result->id, $result, Report_Logs::CACHE_GROUP );
+			wp_cache_add( $result['id'], $result, Report_Logs::CACHE_GROUP );
 		}
 	}
 
