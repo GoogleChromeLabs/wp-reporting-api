@@ -124,6 +124,17 @@ class Reports_Screen {
 		}
 
 		?>
+		<style type="text/css">
+			.external-link > .dashicons {
+				font-size: 16px;
+				text-decoration: none;
+			}
+
+			.external-link:hover > .dashicons,
+			.external-link:focus > .dashicons {
+				text-decoration: none;
+			}
+		</style>
 		<div class="wrap">
 			<h1 class="wp-heading-inline">
 				<?php echo esc_html( $title ); ?>
@@ -138,6 +149,19 @@ class Reports_Screen {
 			}
 			?>
 			<hr class="wp-header-end">
+
+			<p>
+				<?php esc_html_e( 'Reporting API allows you to receive browser-generated reports about client-side errors and policy violations on your site.', 'reporting-api' ); ?>
+				<?php
+				printf(
+					'<a class="external-link" href="%1$s" target="_blank">%2$s<span class="screen-reader-text"> %3$s</span><span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
+					esc_url( _x( 'https://developers.google.com/web/updates/2018/09/reportingapi', 'learn more link', 'reporting-api' ) ),
+					esc_html__( 'Learn more about Reporting API', 'reporting-api' ),
+					/* translators: accessibility text */
+					esc_html__( '(opens in a new tab)', 'reporting-api' )
+				);
+				?>
+			</p>
 
 			<?php $this->list_table->views(); ?>
 
