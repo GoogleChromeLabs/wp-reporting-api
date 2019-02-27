@@ -130,7 +130,7 @@ class Plugin {
 		add_action(
 			'admin_menu',
 			function() {
-				$admin_screen = new Admin\Reporting_Screen( $this->reports, $this->report_logs );
+				$admin_screen = new Admin\Reports_Screen( $this->reports, $this->report_logs );
 				$admin_screen->register_menu();
 			}
 		);
@@ -172,6 +172,17 @@ class Plugin {
 	}
 
 	/**
+	 * Gets the URL to the plugin's reports screen.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return string Reports screen URL.
+	 */
+	public function reports_screen_url() {
+		return add_query_arg( 'page', Admin\Reports_Screen::SLUG, admin_url( Admin\Reports_Screen::PARENT_SLUG ) );
+	}
+
+	/**
 	 * Dynamically grants the 'manage_reporting_api' capability based on 'manage_options'.
 	 *
 	 * This method is hooked into the `user_has_cap` filter and can be unhooked and replaced with custom functionality
@@ -184,7 +195,7 @@ class Plugin {
 	 */
 	public function grant_reporting_api_cap( array $allcaps ) {
 		if ( isset( $allcaps['manage_options'] ) ) {
-			$allcaps[ Admin\Reporting_Screen::CAPABILITY ] = $allcaps['manage_options'];
+			$allcaps[ Admin\Reports_Screen::CAPABILITY ] = $allcaps['manage_options'];
 		}
 
 		return $allcaps;

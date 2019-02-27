@@ -60,15 +60,13 @@ class Reports_List_Table extends WP_List_Table {
 		);
 	}
 
-
-
 	/**
 	 * Checks the current user's permissions.
 	 *
 	 * @since 0.1.0
 	 */
 	public function ajax_user_can() {
-		return current_user_can( Reporting_Screen::CAPABILITY );
+		return current_user_can( Reports_Screen::CAPABILITY );
 	}
 
 	/**

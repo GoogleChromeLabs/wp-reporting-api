@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Google\WP_Reporting_API\Admin\Reporting_Screen
+ * Class Google\WP_Reporting_API\Admin\Reports_Screen
  *
  * @package   Google\WP_Reporting_API
  * @copyright 2019 Google LLC
@@ -16,11 +16,11 @@ use Google\WP_Reporting_API\Report_Logs;
 use Google\WP_Reporting_API\Report_Log;
 
 /**
- * Class representing the reporting admin screen.
+ * Class representing the admin screen that lists reports.
  *
  * @since 0.1.0
  */
-class Reporting_Screen {
+class Reports_Screen {
 
 	/**
 	 * The admin page slug.
@@ -95,7 +95,7 @@ class Reporting_Screen {
 			__( 'Reporting API', 'reporting-api' ),
 			self::CAPABILITY,
 			self::SLUG,
-			array( $this, 'render_screen' )
+			array( $this, 'render' )
 		);
 		add_action(
 			"load-{$hook_suffix}",
@@ -110,7 +110,7 @@ class Reporting_Screen {
 	 *
 	 * @since 0.1.0
 	 */
-	public function render_screen() {
+	public function render() {
 		$type   = filter_input( INPUT_GET, 'type', FILTER_SANITIZE_STRING );
 		$search = filter_input( INPUT_GET, 's', FILTER_SANITIZE_STRING );
 
