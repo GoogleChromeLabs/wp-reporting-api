@@ -28,7 +28,7 @@ class Reports_Screen {
 	 * @since 0.1.0
 	 * @var string
 	 */
-	const SLUG = 'reporting_api';
+	const SLUG = 'reporting_api_reports';
 
 	/**
 	 * The admin page parent slug.
