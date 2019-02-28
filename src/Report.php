@@ -116,6 +116,47 @@ class Report {
 	}
 
 	/**
+	 * Queries log data associated with the report.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return array Associative array with all log data.
+	 */
+	public function query_log_data() {
+		global $wpdb;
+
+		$defaults = array(
+			'urls'            => array(),
+			'user_agents'     => array(),
+			'count'           => 0,
+			'first_triggered' => '',
+			'last_triggered'  => '',
+			'first_reported'  => '',
+			'last_reported'   => '',
+		);
+
+		if ( empty( $this->id ) ) {
+			return $defaults;
+		}
+
+		$data = wp_cache_get( (string) $this->id . '_log_data', Reports::CACHE_GROUP );
+		if ( false === $data ) {
+			$report_logs = Plugin::instance()->report_logs();
+			$table_name  = $report_logs->get_db_table_name();
+
+			$data = $wpdb->get_row( $wpdb->prepare( "SELECT COUNT(*) AS count, MIN(triggered) AS first_triggered, MAX(triggered) AS last_triggered, MIN(reported) AS first_reported, MAX(reported) AS last_reported FROM {$table_name} WHERE report_id = %d", $this->id ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL
+
+			$data['count']       = (int) $data['count'];
+			$data['urls']        = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT url FROM {$table_name} WHERE report_id = %d", $this->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL
+			$data['user_agents'] = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT user_agent FROM {$table_name} WHERE report_id = %d", $this->id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL
+
+			wp_cache_add( (string) $this->id . '_log_data', $data, Reports::CACHE_GROUP );
+		}
+
+		return array_merge( $defaults, $data );
+	}
+
+	/**
 	 * Sets the report properties.
 	 *
 	 * @since 0.1.0

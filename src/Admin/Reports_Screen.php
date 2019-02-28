@@ -134,6 +134,12 @@ class Reports_Screen {
 			.external-link:focus > .dashicons {
 				text-decoration: none;
 			}
+
+			@media (min-width: 783px) {
+				.reports .column-body {
+					width: 40%;
+				}
+			}
 		</style>
 		<div class="wrap">
 			<h1 class="wp-heading-inline">

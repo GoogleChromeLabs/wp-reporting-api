@@ -24,6 +24,14 @@ use WP_List_Table;
 class Reports_List_Table extends WP_List_Table {
 
 	/**
+	 * Maximum number of items to show in table column lists.
+	 *
+	 * @since 0.1.0
+	 * @var int
+	 */
+	const LIST_LIMIT = 5;
+
+	/**
 	 * The reports controller instance.
 	 *
 	 * @since 0.1.0
@@ -89,34 +97,22 @@ class Reports_List_Table extends WP_List_Table {
 		$page     = $this->get_pagenum();
 		$per_page = $this->get_items_per_page( "{$this->screen->id}_per_page" );
 
-		$args = array(
-			'number'        => $per_page,
-			'offset'        => ( $page - 1 ) * $per_page,
-			'no_found_rows' => false,
-			'type'          => filter_input( INPUT_GET, 'type', FILTER_SANITIZE_STRING ),
-			'search'        => filter_input( INPUT_GET, 's', FILTER_SANITIZE_STRING ),
-		);
-
-		$m = (string) filter_input( INPUT_GET, 'm', FILTER_VALIDATE_INT );
-		if ( ! empty( $m ) && strlen( $m ) === 6 ) {
-			$args['date_query'] = array(
-				'column'   => 'reported',
-				'relation' => 'AND',
-				array(
-					'year'  => substr( $m, 0, 4 ),
-					'month' => substr( $m, 4, 2 ),
-				),
-			);
-		}
-
-		$orderby = filter_input( INPUT_GET, 'orderby', FILTER_SANITIZE_STRING );
-		if ( ! empty( $orderby ) ) {
-			$args['orderby'] = $orderby;
-		}
-
-		$order = filter_input( INPUT_GET, 'order', FILTER_SANITIZE_STRING );
-		if ( ! empty( $order ) ) {
-			$args['order'] = strtoupper( $order );
+		$args                  = $this->get_current_filter_args();
+		$args['number']        = $per_page;
+		$args['offset']        = ( $page - 1 ) * $per_page;
+		$args['no_found_rows'] = false;
+		if ( ! empty( $args['m'] ) ) {
+			if ( strlen( $args['m'] ) === 6 ) {
+				$args['date_query'] = array(
+					'column'   => 'reported',
+					'relation' => 'AND',
+					array(
+						'year'  => substr( $args['m'], 0, 4 ),
+						'month' => substr( $args['m'], 4, 2 ),
+					),
+				);
+			}
+			unset( $args['m'] );
 		}
 
 		$query = $this->reports->get_query( $args );
@@ -194,14 +190,8 @@ class Reports_List_Table extends WP_List_Table {
 			return;
 		}
 
-		$filter_args = array_filter(
-			array(
-				'm'       => (string) filter_input( INPUT_GET, 'm', FILTER_VALIDATE_INT ),
-				'orderby' => filter_input( INPUT_GET, 'orderby', FILTER_SANITIZE_STRING ),
-				'order'   => filter_input( INPUT_GET, 'order', FILTER_SANITIZE_STRING ),
-				'type'    => $type,
-			)
-		);
+		$filter_args         = $this->get_current_filter_args();
+		$filter_args['type'] = $type;
 
 		$filter_url = add_query_arg( $filter_args );
 
@@ -218,7 +208,43 @@ class Reports_List_Table extends WP_List_Table {
 	 * @param Report $report Report to display column for.
 	 */
 	public function column_url( Report $report ) {
-		// TODO.
+		$data = $report->query_log_data();
+
+		if ( empty( $data['urls'] ) ) {
+			return;
+		}
+
+		$urls       = $data['urls'];
+		$more_count = 0;
+		if ( count( $urls ) > self::LIST_LIMIT ) {
+			$more_count = count( $urls ) - self::LIST_LIMIT;
+			$urls       = array_slice( $urls, 0, self::LIST_LIMIT );
+		}
+
+		$filter_args = $this->get_current_filter_args();
+
+		$home_url = home_url();
+
+		$urls = array_map(
+			function( $url ) use ( $filter_args, $home_url ) {
+				$filter_args['url'] = $url;
+				$display_url        = $url;
+				if ( 0 === strpos( $display_url, $home_url ) ) {
+					$display_url = substr( $display_url, strlen( $home_url ) );
+					if ( empty( $display_url ) ) {
+						$display_url = '/';
+					}
+				}
+				return '<a href="' . esc_url( add_query_arg( $filter_args ) ) . '"><code>' . esc_html( $display_url ) . '</code></a>';
+			},
+			$urls
+		);
+
+		echo implode( _x( ', ', 'separator', 'reporting-api' ), $urls ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		if ( $more_count > 0 ) {
+			/* translators: %d: URL count */
+			echo ' ' . esc_html( sprintf( _nx( '[and %d more]', '[and %d more]', $more_count, 'URL list', 'reporting-api' ), $more_count ) );
+		}
 	}
 
 	/**
@@ -229,7 +255,33 @@ class Reports_List_Table extends WP_List_Table {
 	 * @param Report $report Report to display column for.
 	 */
 	public function column_user_agent( Report $report ) {
-		// TODO.
+		$data = $report->query_log_data();
+
+		$data = $report->query_log_data();
+
+		if ( empty( $data['user_agents'] ) ) {
+			return;
+		}
+
+		$user_agents = $data['user_agents'];
+		$more_count  = 0;
+		if ( count( $user_agents ) > self::LIST_LIMIT ) {
+			$more_count  = count( $user_agents ) - self::LIST_LIMIT;
+			$user_agents = array_slice( $user_agents, 0, self::LIST_LIMIT );
+		}
+
+		$user_agents = array_map(
+			function( $user_agent ) {
+				return '<code>' . esc_html( $user_agent ) . '</code>';
+			},
+			$user_agents
+		);
+
+		echo implode( _x( ', ', 'separator', 'reporting-api' ), $user_agents ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		if ( $more_count > 0 ) {
+			/* translators: %d: user agent count */
+			echo ' ' . esc_html( sprintf( _nx( '[and %d more]', '[and %d more]', $more_count, 'user agent list', 'reporting-api' ), $more_count ) );
+		}
 	}
 
 	/**
@@ -240,7 +292,10 @@ class Reports_List_Table extends WP_List_Table {
 	 * @param Report $report Report to display column for.
 	 */
 	public function column_count( Report $report ) {
-		// TODO.
+		$data = $report->query_log_data();
+
+		$count = isset( $data['count'] ) ? $data['count'] : 0;
+		echo esc_html( $count );
 	}
 
 	/**
@@ -248,10 +303,27 @@ class Reports_List_Table extends WP_List_Table {
 	 *
 	 * @since 0.1.0
 	 *
+	 * @global string $mode List table view mode.
+	 *
 	 * @param Report $report Report to display column for.
 	 */
 	public function column_reported( Report $report ) {
-		// TODO.
+		global $mode;
+
+		$data = $report->query_log_data();
+
+		if ( empty( $data['last_reported'] ) ) {
+			return;
+		}
+
+		if ( 'excerpt' === $mode ) {
+			/* translators: 1: date format, 2: time format */
+			$format = sprintf( _x( '%1$s %2$s', 'date and time format', 'reporting-api' ), get_option( 'date_format' ), get_option( 'time_format' ) );
+		} else {
+			$format = get_option( 'date_format' );
+		}
+
+		echo esc_html( mysql2date( $format, $data['last_reported'] ) );
 	}
 
 	/**
@@ -292,7 +364,6 @@ class Reports_List_Table extends WP_List_Table {
 	protected function get_sortable_columns() {
 		return array(
 			'type'     => 'type',
-			'count'    => array( 'log_count', true ),
 			'reported' => array( 'reported', true ),
 		);
 	}
@@ -424,5 +495,24 @@ class Reports_List_Table extends WP_List_Table {
 		?>
 		</select>
 		<?php
+	}
+
+	/**
+	 * Gets the list of currently applied filter arguments.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return array Associative array of reports list table arguments.
+	 */
+	protected function get_current_filter_args() {
+		return array_filter(
+			array(
+				'm'       => (string) filter_input( INPUT_GET, 'm', FILTER_VALIDATE_INT ),
+				'orderby' => filter_input( INPUT_GET, 'orderby', FILTER_SANITIZE_STRING ),
+				'order'   => filter_input( INPUT_GET, 'order', FILTER_SANITIZE_STRING ),
+				'type'    => filter_input( INPUT_GET, 'type', FILTER_SANITIZE_STRING ),
+				'url'     => filter_input( INPUT_GET, 'url', FILTER_SANITIZE_STRING ),
+			)
+		);
 	}
 }

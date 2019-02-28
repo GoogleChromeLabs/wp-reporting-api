@@ -207,6 +207,7 @@ class Reports {
 		$id = (int) $id;
 
 		wp_cache_delete( $id, self::CACHE_GROUP );
+		wp_cache_delete( (string) $id . '_log_data', self::CACHE_GROUP );
 		wp_cache_set( 'last_changed', microtime(), self::CACHE_GROUP );
 	}
 
