@@ -134,6 +134,10 @@ class Report_Log {
 
 		$this->props['report_id'] = (int) $this->props['report_id'];
 
+		if ( ! empty( $this->props['url'] ) ) {
+			$this->props['url'] = trailingslashit( $this->props['url'] );
+		}
+
 		if ( $this->is_date_empty( $this->props['triggered'] ) ) {
 			$this->props['triggered'] = $this->get_fallback_date( $this->props['reported'] );
 		}
