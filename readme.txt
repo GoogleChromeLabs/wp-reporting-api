@@ -13,7 +13,17 @@ WordPress plugin for receiving browser reports via a Reporting API endpoint.
 
 == Description ==
 
-TODO.
+As [noted on the Google Developers blog](https://developers.google.com/web/updates/2018/09/reportingapi):
+
+> The Reporting API defines a new HTTP header, `Report-To`, that gives web developers a way to **specify server endpoints** for the browser to send warnings and errors to. Browser-generated warnings like CSP violations, Feature Policy violations, deprecations, browser interventions, and network errors are some of the things that can be collected using the Reporting API.
+
+This plugin provides a storage mechanism and endpoint for browser reports according to the Reporting API spec in WordPress, as well as an admin interface for browsing these reports. It also provides an API for sending the `Report-To` response headers.
+
+As the Reporting API specification is still evolving and at an early stage, the plugin reflects that and is currently an experimental prototype, to demonstrate how Reporting API can be used in WordPress.
+
+= Did you know? =
+
+There is also a new specification called Feature Policy which will integrate with the Reporting API specification. There is a [WordPress plugin for Feature Policy](https://wordpress.org/plugins/feature-policy/) as well.
 
 == Installation ==
 
@@ -22,11 +32,9 @@ TODO.
 
 == Frequently Asked Questions ==
 
-TODO.
-
 = Where should I submit my support request? =
 
-For regular support requests, please use the [wordpress.org support forums](https://wordpress.org/support/plugin/reporting-api). If you have a technical issue with the plugin where you already have more insight on how to fix it, you can also [open an issue on Github instead](https://github.com/GoogleChromeLabs/wp-reporting-api/issues).
+Note that this is an experimental plugin, so support is limited and volunteer-driven. For regular support requests, please use the [wordpress.org support forums](https://wordpress.org/support/plugin/reporting-api). If you have a technical issue with the plugin where you already have more insight on how to fix it, you can also [open an issue on Github instead](https://github.com/GoogleChromeLabs/wp-reporting-api/issues).
 
 = How can I contribute to the plugin? =
 
@@ -36,7 +44,9 @@ You can also contribute to the plugin by translating it. Simply visit [translate
 
 == Screenshots ==
 
-TODO.
+1. Reports admin screen with list view
+2. Reports admin screen with excerpt view
+3. Reports admin screen, filtered by a specific report type
 
 == Changelog ==
 
