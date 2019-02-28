@@ -91,7 +91,7 @@ class Reports_Screen {
 	public function register_menu() {
 		$hook_suffix = add_submenu_page(
 			self::PARENT_SLUG,
-			__( 'Reports', 'reporting-api' ),
+			__( 'Reporting API: Reports', 'reporting-api' ),
 			__( 'Reporting API', 'reporting-api' ),
 			self::CAPABILITY,
 			self::SLUG,
@@ -114,12 +114,12 @@ class Reports_Screen {
 		$type   = filter_input( INPUT_GET, 'type', FILTER_SANITIZE_STRING );
 		$search = filter_input( INPUT_GET, 's', FILTER_SANITIZE_STRING );
 
-		$title = __( 'Reports', 'reporting-api' );
+		$title = __( 'Reporting API: Reports', 'reporting-api' );
 		if ( ! empty( $type ) ) {
 			$types = Reports::get_types();
 			if ( isset( $types[ $type ] ) ) {
 				/* translators: %s: report type label */
-				$title = sprintf( __( '%s Reports', 'reporting-api' ), $types[ $type ] );
+				$title = sprintf( __( 'Reporting API: %s Reports', 'reporting-api' ), $types[ $type ] );
 			}
 		}
 
