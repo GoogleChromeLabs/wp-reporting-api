@@ -24,14 +24,6 @@ use WP_List_Table;
 class Reports_List_Table extends WP_List_Table {
 
 	/**
-	 * Maximum number of items to show in table column lists.
-	 *
-	 * @since 0.1.0
-	 * @var int
-	 */
-	const LIST_LIMIT = 5;
-
-	/**
 	 * The reports controller instance.
 	 *
 	 * @since 0.1.0
@@ -214,11 +206,13 @@ class Reports_List_Table extends WP_List_Table {
 			return;
 		}
 
+		$limit = 5;
+
 		$urls       = $data['urls'];
 		$more_count = 0;
-		if ( count( $urls ) > self::LIST_LIMIT ) {
-			$more_count = count( $urls ) - self::LIST_LIMIT;
-			$urls       = array_slice( $urls, 0, self::LIST_LIMIT );
+		if ( count( $urls ) > $limit ) {
+			$more_count = count( $urls ) - $limit;
+			$urls       = array_slice( $urls, 0, $limit );
 		}
 
 		$filter_args = $this->get_current_filter_args();
@@ -263,11 +257,13 @@ class Reports_List_Table extends WP_List_Table {
 			return;
 		}
 
+		$limit = 2;
+
 		$user_agents = $data['user_agents'];
 		$more_count  = 0;
-		if ( count( $user_agents ) > self::LIST_LIMIT ) {
-			$more_count  = count( $user_agents ) - self::LIST_LIMIT;
-			$user_agents = array_slice( $user_agents, 0, self::LIST_LIMIT );
+		if ( count( $user_agents ) > $limit ) {
+			$more_count  = count( $user_agents ) - $limit;
+			$user_agents = array_slice( $user_agents, 0, $limit );
 		}
 
 		$user_agents = array_map(
