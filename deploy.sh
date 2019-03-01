@@ -97,6 +97,8 @@ fi
 
 cd $SVNPATH/trunk/
 
+composer install --no-dev
+
 printf "Ignoring GitHub specific files and deployment script..."
 svn propset --quiet svn:ignore ".codeclimate.yml
 .git
