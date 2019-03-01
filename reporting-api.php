@@ -25,20 +25,26 @@
  * Loads the plugin.
  *
  * @since 0.1.0
+ * @access private
  */
-function _wp_reporting_api_load() {
+function reporting_api_load() {
 	if ( version_compare( phpversion(), '5.6', '<' ) ) {
-		add_action( 'admin_notices', '_wp_reporting_api_display_php_version_notice' );
+		add_action( 'admin_notices', 'reporting_api_display_php_version_notice' );
 		return;
 	}
 
 	if ( version_compare( get_bloginfo( 'version' ), '4.7', '<' ) ) {
-		add_action( 'admin_notices', '_wp_reporting_api_display_wp_version_notice' );
+		add_action( 'admin_notices', 'reporting_api_display_wp_version_notice' );
 		return;
 	}
 
-	if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
-		require __DIR__ . '/vendor/autoload.php';
+	if ( ! class_exists( 'Google\\WP_Reporting_API\\Plugin' ) ) {
+		if ( ! file_exists( dirname( __FILE__ ) . '/vendor/autoload.php' ) ) {
+			add_action( 'admin_notices', 'reporting_api_display_composer_install_requirement' );
+			return;
+		}
+
+		require_once dirname( __FILE__ ) . '/vendor/autoload.php';
 	}
 
 	call_user_func( array( 'Google\\WP_Reporting_API\\Plugin', 'load' ), __FILE__ );
@@ -48,8 +54,9 @@ function _wp_reporting_api_load() {
  * Displays an admin notice about an unmet PHP version requirement.
  *
  * @since 0.1.0
+ * @access private
  */
-function _wp_reporting_api_display_php_version_notice() {
+function reporting_api_display_php_version_notice() {
 	?>
 	<div class="notice notice-error">
 		<p>
@@ -70,8 +77,9 @@ function _wp_reporting_api_display_php_version_notice() {
  * Displays an admin notice about an unmet WordPress version requirement.
  *
  * @since 0.1.0
+ * @access private
  */
-function _wp_reporting_api_display_wp_version_notice() {
+function reporting_api_display_wp_version_notice() {
 	?>
 	<div class="notice notice-error">
 		<p>
@@ -88,4 +96,26 @@ function _wp_reporting_api_display_wp_version_notice() {
 	<?php
 }
 
-_wp_reporting_api_load();
+/**
+ * Displays an admin notice about the need to run `composer install`.
+ *
+ * @since 0.1.0
+ * @access private
+ */
+function reporting_api_display_composer_install_requirement() {
+	?>
+	<div class="notice notice-error">
+		<p>
+			<?php
+			printf(
+				/* translators: %s: the composer install command */
+				esc_html__( 'Reporting API appears to being run from source and requires %s to complete its installation.', 'reporting-api' ),
+				'<code>composer install</code>'
+			);
+			?>
+		</p>
+	</div>
+	<?php
+}
+
+reporting_api_load();
