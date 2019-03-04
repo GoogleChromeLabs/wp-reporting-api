@@ -42,6 +42,14 @@ class Plugin {
 	protected $report_logs;
 
 	/**
+	 * The endpoint groups controller instance.
+	 *
+	 * @since 0.1.0
+	 * @var Groups
+	 */
+	protected $groups;
+
+	/**
 	 * Main instance of the plugin.
 	 *
 	 * @since 0.1.0
@@ -61,6 +69,7 @@ class Plugin {
 
 		$this->reports     = new Reports();
 		$this->report_logs = new Report_Logs( $this->reports );
+		$this->groups      = new Groups();
 	}
 
 	/**
@@ -169,6 +178,17 @@ class Plugin {
 	 */
 	public function url( $relative_path = '/' ) {
 		return plugin_dir_url( $this->main_file ) . ltrim( $relative_path, '/' );
+	}
+
+	/**
+	 * Gets the URL to the plugin's built-in reporting REST endpoint.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return string Reporting endpoint URL.
+	 */
+	public function reporting_endpoint_url() {
+		return rest_url( REST\Reporting_Controller::REST_NAMESPACE . '/' . REST\Reporting_Controller::REST_BASE );
 	}
 
 	/**
