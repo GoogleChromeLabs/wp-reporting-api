@@ -14,6 +14,7 @@ use Google\WP_Reporting_API\Reports;
 use Google\WP_Reporting_API\Report;
 use Google\WP_Reporting_API\Report_Logs;
 use Google\WP_Reporting_API\Report_Log;
+use Google\WP_Reporting_API\Report_Types;
 use WP_REST_Server;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -59,16 +60,26 @@ class Reporting_Controller {
 	protected $report_logs;
 
 	/**
+	 * The report types controller instance.
+	 *
+	 * @since 0.1.0
+	 * @var Report_Types
+	 */
+	protected $report_types;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param Reports     $reports     The reports controller instance.
-	 * @param Report_Logs $report_logs The report logs controller instance.
+	 * @param Reports      $reports      The reports controller instance.
+	 * @param Report_Logs  $report_logs  The report logs controller instance.
+	 * @param Report_Types $report_types The report types controller instance.
 	 */
-	public function __construct( Reports $reports, Report_Logs $report_logs ) {
-		$this->reports     = $reports;
-		$this->report_logs = $report_logs;
+	public function __construct( Reports $reports, Report_Logs $report_logs, Report_Types $report_types ) {
+		$this->reports      = $reports;
+		$this->report_logs  = $report_logs;
+		$this->report_types = $report_types;
 	}
 
 	/**
@@ -221,7 +232,7 @@ class Reporting_Controller {
 							'sanitize_callback' => 'rest_sanitize_request_arg',
 							'description'       => __( 'The report type.', 'reporting-api' ),
 							'type'              => 'string',
-							'enum'              => array_keys( Reports::get_types() ),
+							'enum'              => array_keys( $this->report_types->get_all() ),
 							'required'          => true,
 						),
 						'url'        => array(

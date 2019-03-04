@@ -148,7 +148,7 @@ class Plugin {
 		add_action(
 			'rest_api_init',
 			function() {
-				$controller = new REST\Reporting_Controller( $this->reports, $this->report_logs );
+				$controller = new REST\Reporting_Controller( $this->reports, $this->report_logs, $this->report_types );
 				$controller->register_routes();
 			}
 		);
@@ -156,7 +156,7 @@ class Plugin {
 		add_action(
 			'admin_menu',
 			function() {
-				$admin_screen = new Admin\Reports_Screen( $this->reports, $this->report_logs );
+				$admin_screen = new Admin\Reports_Screen( $this->reports, $this->report_logs, $this->report_types );
 				$admin_screen->register_menu();
 			}
 		);

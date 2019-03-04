@@ -14,6 +14,7 @@ use Google\WP_Reporting_API\Reports;
 use Google\WP_Reporting_API\Report;
 use Google\WP_Reporting_API\Report_Logs;
 use Google\WP_Reporting_API\Report_Log;
+use Google\WP_Reporting_API\Report_Types;
 use WP_List_Table;
 
 /**
@@ -40,16 +41,26 @@ class Reports_List_Table extends WP_List_Table {
 	protected $report_logs;
 
 	/**
+	 * The report types controller instance.
+	 *
+	 * @since 0.1.0
+	 * @var Report_Types
+	 */
+	protected $report_types;
+
+	/**
 	 * Constructor.
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param Reports     $reports     The reports controller instance.
-	 * @param Report_Logs $report_logs The report logs controller instance.
+	 * @param Reports      $reports      The reports controller instance.
+	 * @param Report_Logs  $report_logs  The report logs controller instance.
+	 * @param Report_Types $report_types The report types controller instance.
 	 */
-	public function __construct( Reports $reports, Report_Logs $report_logs ) {
-		$this->reports     = $reports;
-		$this->report_logs = $report_logs;
+	public function __construct( Reports $reports, Report_Logs $report_logs, Report_Types $report_types ) {
+		$this->reports      = $reports;
+		$this->report_logs  = $report_logs;
+		$this->report_types = $report_types;
 
 		parent::__construct(
 			array(
@@ -175,7 +186,7 @@ class Reports_List_Table extends WP_List_Table {
 	 * @param Report $report Report to display column for.
 	 */
 	public function column_type( Report $report ) {
-		$types = Reports::get_types();
+		$types = $this->report_types->get_all();
 		$type  = $report->type;
 
 		if ( ! isset( $types[ $type ] ) ) {
@@ -188,7 +199,7 @@ class Reports_List_Table extends WP_List_Table {
 		$filter_url = add_query_arg( $filter_args );
 
 		?>
-		<a href="<?php echo esc_url( $filter_url ); ?>"><?php echo esc_html( $types[ $type ] ); ?></a>
+		<a href="<?php echo esc_url( $filter_url ); ?>"><?php echo esc_html( $types[ $type ]->title ); ?></a>
 		<?php
 	}
 

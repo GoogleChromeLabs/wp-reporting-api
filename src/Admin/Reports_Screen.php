@@ -14,6 +14,7 @@ use Google\WP_Reporting_API\Reports;
 use Google\WP_Reporting_API\Report;
 use Google\WP_Reporting_API\Report_Logs;
 use Google\WP_Reporting_API\Report_Log;
+use Google\WP_Reporting_API\Report_Types;
 
 /**
  * Class representing the admin screen that lists reports.
@@ -63,6 +64,14 @@ class Reports_Screen {
 	protected $report_logs;
 
 	/**
+	 * The report types controller instance.
+	 *
+	 * @since 0.1.0
+	 * @var Report_Types
+	 */
+	protected $report_types;
+
+	/**
 	 * The list table for displaying reports.
 	 *
 	 * @since 0.1.0
@@ -75,12 +84,14 @@ class Reports_Screen {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param Reports     $reports     The reports controller instance.
-	 * @param Report_Logs $report_logs The report logs controller instance.
+	 * @param Reports      $reports      The reports controller instance.
+	 * @param Report_Logs  $report_logs  The report logs controller instance.
+	 * @param Report_Types $report_types The report types controller instance.
 	 */
-	public function __construct( Reports $reports, Report_Logs $report_logs ) {
-		$this->reports     = $reports;
-		$this->report_logs = $report_logs;
+	public function __construct( Reports $reports, Report_Logs $report_logs, Report_Types $report_types ) {
+		$this->reports      = $reports;
+		$this->report_logs  = $report_logs;
+		$this->report_types = $report_types;
 	}
 
 	/**
@@ -116,10 +127,10 @@ class Reports_Screen {
 
 		$title = __( 'Reporting API: Reports', 'reporting-api' );
 		if ( ! empty( $type ) ) {
-			$types = Reports::get_types();
+			$types = $this->report_types->get_all();
 			if ( isset( $types[ $type ] ) ) {
 				/* translators: %s: report type label */
-				$title = sprintf( __( 'Reporting API: %s Reports', 'reporting-api' ), $types[ $type ] );
+				$title = sprintf( __( 'Reporting API: %s Reports', 'reporting-api' ), $types[ $type ]->title );
 			}
 		}
 
@@ -211,7 +222,7 @@ class Reports_Screen {
 			)
 		);
 
-		$this->list_table = new Reports_List_Table( $this->reports, $this->report_logs );
+		$this->list_table = new Reports_List_Table( $this->reports, $this->report_logs, $this->report_types );
 		$this->list_table->prepare_items();
 	}
 }
