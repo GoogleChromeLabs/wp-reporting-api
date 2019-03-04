@@ -32,6 +32,10 @@ There is also a new specification called Feature Policy which will integrate wit
 
 == Frequently Asked Questions ==
 
+= Which browsers support the Reporting API specification? =
+
+The Reporting API standard is quite bleeding-edge, so support is currently very limited. The only browser supporting it is Chrome, where you will need to enable support via a command line argument `--enable-features=Reporting`. To learn how you can use Chrome command line arguments, please visit [www.chromium.org/developers/how-tos/run-chromium-with-flags](https://www.chromium.org/developers/how-tos/run-chromium-with-flags).
+
 = Where should I submit my support request? =
 
 Note that this is an experimental plugin, so support is limited and volunteer-driven. For regular support requests, please use the [wordpress.org support forums](https://wordpress.org/support/plugin/reporting-api). If you have a technical issue with the plugin where you already have more insight on how to fix it, you can also [open an issue on Github instead](https://github.com/GoogleChromeLabs/wp-reporting-api/issues).
