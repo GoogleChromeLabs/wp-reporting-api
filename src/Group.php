@@ -116,8 +116,10 @@ class Group {
 				$endpoint = array( 'url' => $endpoint );
 			}
 
-			$this->args['endpoint'][ $index ] = $this->parse_endpoint( (array) $endpoint );
+			$this->args['endpoints'][ $index ] = $this->parse_endpoint( (array) $endpoint );
 		}
+
+		$this->args['endpoints'] = array_values( $this->args['endpoints'] );
 	}
 
 	/**

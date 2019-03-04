@@ -129,6 +129,14 @@ class Plugin {
 		);
 
 		add_action(
+			'send_headers',
+			function() {
+				$group_headers = new Group_Headers( $this->groups );
+				$group_headers->send_headers();
+			}
+		);
+
+		add_action(
 			'rest_api_init',
 			function() {
 				$controller = new REST\Reporting_Controller( $this->reports, $this->report_logs );
