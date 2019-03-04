@@ -42,6 +42,14 @@ class Plugin {
 	protected $report_logs;
 
 	/**
+	 * The report types controller instance.
+	 *
+	 * @since 0.1.0
+	 * @var Report_Types
+	 */
+	protected $report_types;
+
+	/**
 	 * The endpoint groups controller instance.
 	 *
 	 * @since 0.1.0
@@ -67,9 +75,10 @@ class Plugin {
 	public function __construct( $main_file ) {
 		$this->main_file = $main_file;
 
-		$this->reports     = new Reports();
-		$this->report_logs = new Report_Logs( $this->reports );
-		$this->groups      = new Groups();
+		$this->reports      = new Reports();
+		$this->report_logs  = new Report_Logs( $this->reports );
+		$this->report_types = new Report_Types();
+		$this->groups       = new Groups();
 	}
 
 	/**
