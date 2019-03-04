@@ -34,7 +34,7 @@ There is also a new specification called Feature Policy which will integrate wit
 
 = Which browsers support the Reporting API specification? =
 
-The Reporting API standard is quite bleeding-edge, so support is currently very limited. The only browser supporting it is Chrome, where you will need to enable support via a command line argument `--enable-features=Reporting`. To learn how you can use Chrome command line arguments, please visit [www.chromium.org/developers/how-tos/run-chromium-with-flags](https://www.chromium.org/developers/how-tos/run-chromium-with-flags).
+The Reporting API standard is quite bleeding-edge, so support is currently still limited. The only browser supporting it at the moment is Chrome.
 
 = Where should I submit my support request? =
 
