@@ -319,9 +319,11 @@ class Reports_List_Table extends WP_List_Table {
 
 		$data = $report->query_log_data();
 
-		if ( empty( $data['last_reported'] ) ) {
+		if ( empty( $data['last_reported'] ) || '0000-00-00 00:00:00' === $data['last_reported'] ) {
 			return;
 		}
+
+		$datetime = get_date_from_gmt( $data['last_reported'] );
 
 		if ( 'excerpt' === $mode ) {
 			/* translators: 1: date format, 2: time format */
@@ -330,7 +332,7 @@ class Reports_List_Table extends WP_List_Table {
 			$format = get_option( 'date_format' );
 		}
 
-		echo esc_html( mysql2date( $format, $data['last_reported'] ) );
+		echo esc_html( mysql2date( $format, $datetime ) );
 	}
 
 	/**
