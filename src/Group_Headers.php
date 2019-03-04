@@ -56,6 +56,10 @@ class Group_Headers {
 			);
 		}
 
+		if ( empty( $headers ) ) {
+			return;
+		}
+
 		$value = implode( ', ', $headers );
 
 		header( "Report-To: {$value}" );
