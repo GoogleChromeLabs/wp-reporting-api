@@ -142,6 +142,9 @@ class Plugin {
 			function() {
 				$group_headers = new Group_Headers( $this->groups );
 				$group_headers->send_headers();
+
+				$report_type_headers = new Report_Type_Headers( $this->report_types, $this->groups );
+				$report_type_headers->send_headers();
 			}
 		);
 

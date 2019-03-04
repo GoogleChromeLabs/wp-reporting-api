@@ -37,7 +37,7 @@ class Group_Headers {
 	}
 
 	/**
-	 * Sends feature policy headers.
+	 * Sends Report-To header for all the endpoint groups.
 	 *
 	 * @since 0.1.0
 	 */
