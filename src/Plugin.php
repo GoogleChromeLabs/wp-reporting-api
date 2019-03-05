@@ -163,6 +163,14 @@ class Plugin {
 				$admin_screen->register_menu();
 			}
 		);
+
+		add_action(
+			'admin_enqueue_scripts',
+			function( $hook_suffix ) {
+				$admin_screen = new Admin\Pointers();
+				$admin_screen->enqueue_scripts( $hook_suffix );
+			}
+		);
 	}
 
 	/**
