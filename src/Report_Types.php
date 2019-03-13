@@ -41,7 +41,13 @@ class Report_Types {
 			'csp'                      => array(
 				'title'           => __( 'Content Security Policy', 'reporting-api' ),
 				'header_callback' => function( $group ) {
-					$value = "default-src https:; report-to {$group}";
+					// Use report-uri directive for browser backward compatibility.
+					$report_uri = '';
+					if ( 'default' === $group ) {
+						$report_uri = 'report-uri ' . Plugin::instance()->reporting_endpoint_url() . '; ';
+					}
+
+					$value = "{$report_uri}report-to {$group}";
 					header( "Content-Security-Policy-Report-Only: {$value}" );
 				},
 			),
