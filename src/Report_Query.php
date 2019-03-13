@@ -104,56 +104,61 @@ class Report_Query {
 	 * Sets the query vars.
 	 *
 	 * @since 0.1.0
+	 * @since 0.1.1 The $update_log_data_cache argument was added.
 	 *
 	 * @param Reports $reports    Parent reports controller instance.
 	 * @param array   $query_vars {
 	 *     Array of report query arguments.
 	 *
-	 *     @type array        $include       Array of report IDs to include. Default empty.
-	 *     @type array        $exclude       Array of report IDs to exclude. Default empty.
-	 *     @type int          $number        Maximum number of reports to retrieve. Default 10.
-	 *     @type int          $offset        Number of reports to offset the query. Used to build LIMIT clause.
-	 *                                       Default 0.
-	 *     @type bool         $no_found_rows Whether to disable the `SQL_CALC_FOUND_ROWS` query. Default false.
-	 *     @type string|array $orderby       Report orderby field or array of orderby fields. Accepts 'id', 'type',
-	 *                                       'triggered', 'reported', 'include'. Default 'reported'.
-	 *     @type string       $order         How to order retrieved reports. Accepts 'ASC', 'DESC'. Default 'DESC'.
-	 *     @type string|array $type          Limit results to those affiliated with a given type. Default empty
-	 *                                       string.
-	 *     @type string|array $body          Limit results to those affiliated with a given body as JSON-encoded
-	 *                                       string. Default empty string.
-	 *     @type string|array $url           Limit results to those that occurred with a given URL. Default empty
-	 *                                       string.
-	 *     @type string|array $user_agent    Limit results to those that occurred with a given user agent. Default
-	 *                                       empty string.
-	 *     @type array        $date_query    Date query clauses to limit reports by. Valid columns are 'triggered'
-	 *                                       and 'reported', with the latter being the default column. See
-	 *                                       WP_Date_Query. Default null.
-	 *     @type string       $search        Search term(s) to retrieve matching reports for. Default empty.
-	 *     @type string       $fields        Report fields to return. Accepts 'ids' (returns an array of report IDs),
-	 *                                       'count' (returns a report count) or 'all' (returns an array of complete
-	 *                                       report objects).
-	 *     @type bool         $update_cache  Whether to prime the cache for found reports. Default true.
+	 *     @type array        $include               Array of report IDs to include. Default empty.
+	 *     @type array        $exclude               Array of report IDs to exclude. Default empty.
+	 *     @type int          $number                Maximum number of reports to retrieve. Default 10.
+	 *     @type int          $offset                Number of reports to offset the query. Used to build LIMIT clause.
+	 *                                               Default 0.
+	 *     @type bool         $no_found_rows         Whether to disable the `SQL_CALC_FOUND_ROWS` query. Default false.
+	 *     @type string|array $orderby               Report orderby field or array of orderby fields. Accepts 'id',
+	 *                                               'type', 'triggered', 'reported', 'include'. Default 'reported'.
+	 *     @type string       $order                 How to order retrieved reports. Accepts 'ASC', 'DESC'. Default
+	 *                                               'DESC'.
+	 *     @type string|array $type                  Limit results to those affiliated with a given type. Default empty
+	 *                                               string.
+	 *     @type string|array $body                  Limit results to those affiliated with a given body as
+	 *                                               JSON-encoded string. Default empty string.
+	 *     @type string|array $url                   Limit results to those that occurred with a given URL. Default
+	 *                                               empty string.
+	 *     @type string|array $user_agent            Limit results to those that occurred with a given user agent.
+	 *                                               Default empty string.
+	 *     @type array        $date_query            Date query clauses to limit reports by. Valid columns are
+	 *                                               'triggered' and 'reported', with the latter being the default
+	 *                                               column. See WP_Date_Query. Default null.
+	 *     @type string       $search                Search term(s) to retrieve matching reports for. Default empty.
+	 *     @type string       $fields                Report fields to return. Accepts 'ids' (returns an array of
+	 *                                               report IDs), 'count' (returns a report count) or 'all' (returns an
+	 *                                               array of complete report objects).
+	 *     @type bool         $update_cache          Whether to prime the cache for found reports. Default true.
+	 *     @type bool         $update_log_data_cache Whether to prime the log data cache for found reports. Default
+	 *                                               true.
 	 * }
 	 */
 	public function __construct( Reports $reports, array $query_vars ) {
 		$this->reports            = $reports;
 		$this->query_var_defaults = array(
-			'include'       => array(),
-			'exclude'       => array(),
-			'number'        => 10,
-			'offset'        => 0,
-			'no_found_rows' => false,
-			'orderby'       => 'reported',
-			'order'         => 'DESC',
-			'type'          => '',
-			'body'          => '',
-			'url'           => '',
-			'user_agent'    => '',
-			'date_query'    => null,
-			'search'        => '',
-			'fields'        => 'all',
-			'update_cache'  => true,
+			'include'               => array(),
+			'exclude'               => array(),
+			'number'                => 10,
+			'offset'                => 0,
+			'no_found_rows'         => false,
+			'orderby'               => 'reported',
+			'order'                 => 'DESC',
+			'type'                  => '',
+			'body'                  => '',
+			'url'                   => '',
+			'user_agent'            => '',
+			'date_query'            => null,
+			'search'                => '',
+			'fields'                => 'all',
+			'update_cache'          => true,
+			'update_log_data_cache' => true,
 		);
 
 		$this->parse_query_vars( $query_vars );
@@ -222,6 +227,10 @@ class Report_Query {
 
 		if ( $this->query_vars['update_cache'] ) {
 			$this->prime_caches( $result_ids );
+		}
+
+		if ( $this->query_vars['update_log_data_cache'] ) {
+			$this->prime_log_data_caches( $result_ids );
 		}
 
 		// Convert to Report instances.
@@ -611,6 +620,97 @@ class Report_Query {
 
 		foreach ( $fresh_results as $result ) {
 			wp_cache_add( $result['id'], $result, Reports::CACHE_GROUP );
+		}
+	}
+
+	/**
+	 * Adds any results from the given IDs to the log data cache that do not already exist in cache.
+	 *
+	 * @since 0.1.1
+	 *
+	 * @global wpdb $wpdb WordPress database abstraction object.
+	 *
+	 * @param array $result_ids List of result IDs.
+	 */
+	protected function prime_log_data_caches( $result_ids ) {
+		global $wpdb;
+
+		$non_cached_ids = array();
+		foreach ( $result_ids as $result_id ) {
+			if ( ! wp_cache_get( (string) $result_id . '_log_data', Reports::CACHE_GROUP ) ) {
+				$non_cached_ids[] = $result_id;
+			}
+		}
+		if ( empty( $non_cached_ids ) ) {
+			return;
+		}
+
+		$table_name = Plugin::instance()->report_logs()->get_db_table_name();
+
+		// Request regular columns for each report.
+		$fresh_results = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			sprintf(
+				// phpcs:ignore WordPress.DB.PreparedSQL
+				"SELECT report_id, COUNT(*) AS count, MIN(triggered) AS first_triggered, MAX(triggered) AS last_triggered, MIN(reported) AS first_reported, MAX(reported) AS last_reported FROM {$table_name} WHERE report_id IN (%s) GROUP BY report_id",
+				join( ',', array_map( 'intval', $non_cached_ids ) ) // phpcs:ignore WordPress.DB.PreparedSQL
+			),
+			ARRAY_A
+		);
+		if ( ! $fresh_results ) {
+			return;
+		}
+
+		// Request all URLs for each report.
+		$urls = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			sprintf(
+				// phpcs:ignore WordPress.DB.PreparedSQL
+				"SELECT report_id, url FROM {$table_name} WHERE report_id IN (%s) GROUP BY report_id, url",
+				join( ',', array_map( 'intval', $non_cached_ids ) ) // phpcs:ignore WordPress.DB.PreparedSQL
+			),
+			ARRAY_A
+		);
+
+		// Request all user agents for each report.
+		$user_agents = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			sprintf(
+				// phpcs:ignore WordPress.DB.PreparedSQL
+				"SELECT report_id, user_agent FROM {$table_name} WHERE report_id IN (%s) GROUP BY report_id, user_agent",
+				join( ',', array_map( 'intval', $non_cached_ids ) ) // phpcs:ignore WordPress.DB.PreparedSQL
+			),
+			ARRAY_A
+		);
+
+		$datasets = array();
+
+		foreach ( $fresh_results as $data ) {
+			$report_id = (int) $data['report_id'];
+			unset( $data['report_id'] );
+
+			$data['count']       = (int) $data['count'];
+			$data['urls']        = array();
+			$data['user_agents'] = array();
+
+			$datasets[ $report_id ] = $data;
+		}
+
+		foreach ( $urls as $data ) {
+			$report_id = (int) $data['report_id'];
+
+			if ( isset( $datasets[ $report_id ] ) ) {
+				$datasets[ $report_id ]['urls'][] = $data['url'];
+			}
+		}
+
+		foreach ( $user_agents as $data ) {
+			$report_id = (int) $data['report_id'];
+
+			if ( isset( $datasets[ $report_id ] ) ) {
+				$datasets[ $report_id ]['user_agents'][] = $data['user_agent'];
+			}
+		}
+
+		foreach ( $datasets as $report_id => $report_log_data ) {
+			wp_cache_add( (string) $report_id . '_log_data', $report_log_data, Reports::CACHE_GROUP );
 		}
 	}
 
