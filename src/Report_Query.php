@@ -645,14 +645,16 @@ class Report_Query {
 			return;
 		}
 
+		$ids_sql_list = implode( ',', array_fill( 0, count( $non_cached_ids ), '%d' ) );
+
 		$table_name = Plugin::instance()->report_logs()->get_db_table_name();
 
 		// Request regular columns for each report.
 		$fresh_results = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			sprintf(
-				// phpcs:ignore WordPress.DB.PreparedSQL
-				"SELECT report_id, COUNT(*) AS count, MIN(triggered) AS first_triggered, MAX(triggered) AS last_triggered, MIN(reported) AS first_reported, MAX(reported) AS last_reported FROM {$table_name} WHERE report_id IN (%s) GROUP BY report_id",
-				join( ',', array_map( 'intval', $non_cached_ids ) ) // phpcs:ignore WordPress.DB.PreparedSQL
+			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+				"SELECT report_id, COUNT(*) AS count, MIN(triggered) AS first_triggered, MAX(triggered) AS last_triggered, MIN(reported) AS first_reported, MAX(reported) AS last_reported FROM {$table_name} WHERE report_id IN ({$ids_sql_list}) GROUP BY report_id",
+				$non_cached_ids
 			),
 			ARRAY_A
 		);
@@ -662,20 +664,20 @@ class Report_Query {
 
 		// Request all URLs for each report.
 		$urls = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			sprintf(
-				// phpcs:ignore WordPress.DB.PreparedSQL
-				"SELECT report_id, url FROM {$table_name} WHERE report_id IN (%s) GROUP BY report_id, url",
-				join( ',', array_map( 'intval', $non_cached_ids ) ) // phpcs:ignore WordPress.DB.PreparedSQL
+			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+				"SELECT report_id, url FROM {$table_name} WHERE report_id IN ({$ids_sql_list}) GROUP BY report_id, url",
+				$non_cached_ids
 			),
 			ARRAY_A
 		);
 
 		// Request all user agents for each report.
 		$user_agents = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			sprintf(
-				// phpcs:ignore WordPress.DB.PreparedSQL
-				"SELECT report_id, user_agent FROM {$table_name} WHERE report_id IN (%s) GROUP BY report_id, user_agent",
-				join( ',', array_map( 'intval', $non_cached_ids ) ) // phpcs:ignore WordPress.DB.PreparedSQL
+			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+				"SELECT report_id, user_agent FROM {$table_name} WHERE report_id IN ({$ids_sql_list}) GROUP BY report_id, user_agent",
+				$non_cached_ids
 			),
 			ARRAY_A
 		);
