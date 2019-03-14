@@ -101,10 +101,11 @@ class Reporting_Controller {
 			)
 		);
 
-		// Workaround for WordPress core issue.
+		// Workaround for WordPress core and browser backward compatbility issues.
 		add_filter(
 			'rest_pre_dispatch',
 			function( $result, WP_REST_Server $server, WP_REST_Request $request ) {
+				$this->polyfill_old_csp_request( $request );
 				$this->fix_request_content_type( $request );
 
 				return $result;
@@ -261,6 +262,47 @@ class Reporting_Controller {
 				),
 			),
 		);
+	}
+
+	/**
+	 * Polyfills a Content-Security-Policy report request following the old 'application/csp-report' specification.
+	 *
+	 * Many browsers do not support the new 'application/reports+json' specification for CSP yet, while they generally
+	 * support sending CSP reports. This method allows such requests to be parsed into the new specification.
+	 *
+	 * @since 0.1.1
+	 *
+	 * @param WP_REST_Request $request Full details about the request.
+	 */
+	private function polyfill_old_csp_request( WP_REST_Request $request ) {
+		$content_type = $request->get_content_type();
+		if ( 'application/csp-report' !== $content_type['value'] ) {
+			return;
+		}
+
+		// Temporarily set JSON content type so that the REST API parses JSON params.
+		$request->set_header( 'Content-Type', 'application/json' );
+
+		$json_params = $request->get_json_params();
+		if ( ! isset( $json_params['csp-report'] ) ) {
+			// Reset back to original content type.
+			$request->set_header( 'Content-Type', 'application/csp-report' );
+			return;
+		}
+
+		$json_params = $json_params['csp-report'];
+
+		$csp_report = array(
+			'type'       => 'csp',
+			'age'        => 0,
+			'url'        => $json_params['document-uri'],
+			'user_agent' => filter_input( INPUT_SERVER, 'HTTP_USER_AGENT' ),
+			'body'       => $json_params,
+		);
+
+		// Set the correct content type and body.
+		$request->set_header( 'Content-Type', 'application/reports+json' );
+		$request->set_body( wp_json_encode( array( $csp_report ) ) );
 	}
 
 	/**
