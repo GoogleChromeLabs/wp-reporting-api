@@ -11,7 +11,7 @@
  * Plugin Name: Reporting API
  * Plugin URI:  https://wordpress.org/plugins/reporting-api/
  * Description: WordPress plugin for receiving browser reports via a Reporting API endpoint.
- * Version:     0.1.0
+ * Version:     0.1.1
  * Author:      Google
  * Author URI:  https://opensource.google.com/
  * License:     GNU General Public License v2 (or later)

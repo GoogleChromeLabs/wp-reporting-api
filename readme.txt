@@ -4,7 +4,7 @@ Contributors:      google, flixos90, westonruter
 Requires at least: 4.7
 Tested up to:      5.1
 Requires PHP:      5.6
-Stable tag:        0.1.0
+Stable tag:        0.1.1
 License:           GNU General Public License v2 (or later)
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 Tags:              reporting, api
@@ -53,6 +53,12 @@ You can also contribute to the plugin by translating it. Simply visit [translate
 3. Reports admin screen, filtered by a specific report type
 
 == Changelog ==
+
+= 0.1.1 =
+
+* Add polyfill to support report requests using the old `application/csp-report` specification, parsing it into a proper `application/reports+json` format.
+* Ensure the usage of `Content-Security-Policy-Report-Only` header does not cause side effects.
+* Prime report log data caches for report queries to significantly reduce number of SQL requests when querying multiple reports.
 
 = 0.1.0 =
 

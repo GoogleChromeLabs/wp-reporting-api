@@ -1,7 +1,7 @@
 {
   "name": "google/wp-reporting-api",
   "description": "WordPress plugin for receiving browser reports via a Reporting API endpoint.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "GPL-2.0-or-later",
   "type": "wordpress-plugin",
   "keywords": [
