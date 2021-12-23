@@ -42,7 +42,7 @@ Note that this is an experimental plugin, so support is limited and volunteer-dr
 
 = How can I contribute to the plugin? =
 
-If you have some ideas to improve the plugin or to solve a bug, feel free to raise an issue or submit a pull request in the [Github repository for the plugin](https://github.com/GoogleChromeLabs/wp-reporting-api). Please stick to the [contributing guidelines](https://github.com/GoogleChromeLabs/wp-reporting-api/blob/master/CONTRIBUTING.md).
+If you have some ideas to improve the plugin or to solve a bug, feel free to raise an issue or submit a pull request in the [Github repository for the plugin](https://github.com/GoogleChromeLabs/wp-reporting-api). Please stick to the [contributing guidelines](https://github.com/GoogleChromeLabs/wp-reporting-api/blob/main/CONTRIBUTING.md).
 
 You can also contribute to the plugin by translating it. Simply visit [translate.wordpress.org](https://translate.wordpress.org/projects/wp-plugins/reporting-api) to get started.
 

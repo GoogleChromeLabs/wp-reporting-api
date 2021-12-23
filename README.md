@@ -1,6 +1,6 @@
 [![WordPress plugin](https://img.shields.io/wordpress/plugin/v/reporting-api.svg?maxAge=2592000)](https://wordpress.org/plugins/reporting-api/)
 [![WordPress](https://img.shields.io/wordpress/v/reporting-api.svg?maxAge=2592000)](https://wordpress.org/plugins/reporting-api/)
-[![Build Status](https://api.travis-ci.org/GoogleChromeLabs/wp-reporting-api.png?branch=master)](https://travis-ci.org/GoogleChromeLabs/wp-reporting-api)
+[![Build Status](https://api.travis-ci.org/GoogleChromeLabs/wp-reporting-api.png?branch=main)](https://travis-ci.org/GoogleChromeLabs/wp-reporting-api)
 
 # Reporting API
 
@@ -29,7 +29,7 @@ There is also a new specification called Feature Policy which will integrate wit
 
 ## Contributing
 
-Any kind of contributions to Reporting API are welcome. Please [read the contributing guidelines](https://github.com/GoogleChromeLabs/wp-reporting-api/blob/master/CONTRIBUTING.md) to get started.
+Any kind of contributions to Reporting API are welcome. Please [read the contributing guidelines](https://github.com/GoogleChromeLabs/wp-reporting-api/blob/main/CONTRIBUTING.md) to get started.
 
 ## Further Resources
 
